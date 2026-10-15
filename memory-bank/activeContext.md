@@ -3,7 +3,7 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.6 Run and refusal (M6, gate G4) is implemented on feature/v0-6-run-refusal (not merged, not pushed). Full suite 195 tests passing on Python 3.14.2; compileall clean with demo.py. traces/v0-6-demo.txt is from a real run. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v0.7 Evidence and cost (M7, gate G5) is implemented on feature/v0-7-evidence-cost (not committed, not merged, not pushed). Full suite 220 tests passing on Python 3.14.2; compileall clean. traces/v0-7-demo.txt and traces/v0-7-reconstruct.txt are from real runs. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken). v0.6 merged to main (15de14a) with CI green on 3.12.
 
 ## Recent decisions
 - v0.6: domain failure does not stop the run; its actions are not_executed and later domains still run. No retries. ADR-0005.
@@ -33,4 +33,9 @@ v0.6 Run and refusal (M6, gate G4) is implemented on feature/v0-6-run-refusal (n
 - Approval expiry uses the same clock rule as the registry: a clock moving backwards keeps an approval valid longer.
 
 ## Next step
-Review feature/v0-6-run-refusal and merge to main after approval (plain-English summary first). Then start v0.7 Evidence and cost (M7, gate G5): reconstruct.py, counting token_rejected lines separately, and the aborted-run gap in ADR-0005. Local py -3.12 still needs reinstalling; CI is the 3.12 check.
+Review feature/v0-7-evidence-cost and merge to main after approval (plain-English summary first). Then start v0.8 Perimeters and hardening (M8, gate G6): credential scan with a planted-credential control, import scan, allowed-writes check. Local py -3.12 still needs reinstalling; CI is the 3.12 check.
+
+## Decisions (v0.7)
+- Coordination multiple = exchanges / (runs x 1), the 1 being the monolith's single authorization per run (ADR-0006). Stated assumption for the faculty to dispute.
+- The auditor counts actions per (jti, action), last line wins, because a handler fault writes action_executed then action_failed.
+- A broken domain chain is reported and its lines are not counted; reconstruct exits 1.
