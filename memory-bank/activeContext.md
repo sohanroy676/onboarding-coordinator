@@ -3,7 +3,7 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.3 Registry (M2) is merged to main (13c9f57) and tagged v0.3.0, pushed to origin. G1 passes on Python 3.14.2; the suite has not yet run on 3.12 (CI pins 3.12).
+v0.4 Delegation (M3, gate G2) is merged to main and tagged v0.4.0, pushed to origin. G2 passes on Python 3.14.2 (126 tests in full suite). CI on Python 3.12.10 has passed for every main push so far, including v0.3.
 
 ## Recent decisions
 - HTTP contract, ledger events and per-domain actions fixed in docs/adr/0003-domain-http-contract.md.
@@ -22,4 +22,4 @@ v0.3 Registry (M2) is merged to main (13c9f57) and tagged v0.3.0, pushed to orig
 - Staleness is strictly greater than TTL (age equal to TTL is fresh). Negative age (clock moved back) is treated as fresh; known gap.
 
 ## Next step
-Confirm the suite is green on Python 3.12 in CI, then start v0.4 (check ROADMAP.md for its scope first).
+Start v0.5 Plan and approval (M4, M5) on feature/v0-5-plan-approval from main: planner and approval, with replay, tamper and race tests (ROADMAP.md). Add the approval-secret half of the coordinator-secret check to G2 when approval.py exists. Local py -3.12 still needs reinstalling; CI is the 3.12 check.
