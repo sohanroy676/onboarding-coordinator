@@ -3,7 +3,7 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.3 Registry (M2) is implemented on branch feature/v0-3-registry; G1 gate passes locally on Python 3.14.2. Awaiting review; not pushed or merged.
+v0.3 Registry (M2) is merged to main (13c9f57) and tagged v0.3.0, pushed to origin. G1 passes on Python 3.14.2; the suite has not yet run on 3.12 (CI pins 3.12).
 
 ## Recent decisions
 - HTTP contract, ledger events and per-domain actions fixed in docs/adr/0003-domain-http-contract.md.
@@ -22,4 +22,4 @@ v0.3 Registry (M2) is implemented on branch feature/v0-3-registry; G1 gate passe
 - Staleness is strictly greater than TTL (age equal to TTL is fresh). Negative age (clock moved back) is treated as fresh; known gap.
 
 ## Next step
-Review feature/v0-3-registry (unmerged), confirm the suite on Python 3.12 in CI, then start v0.4.
+Confirm the suite is green on Python 3.12 in CI, then start v0.4 (check ROADMAP.md for its scope first).
