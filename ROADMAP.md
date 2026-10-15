@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Now
-- v0.9 Traces and documents (M9): on feature/v0-9-traces-docs.
+- v1.0 Freeze: all six gates and demo.py pass on a fresh checkout; source archive.
 
 ## Done
+- v0.9 Traces and documents (M9): merged to main (c415761), tagged v0.9.0. Real traces, implementation document, acceptance checklist, troubleshooting guide.
 - v0.8 Perimeters and hardening (M8): merged to main (5f82863), tagged v0.8.0. Closes G6. ADR-0007.
 - v0.7 Evidence and cost (M7): ledger rebuild and coordination multiple (tests/test_g5_evidence_cost.py). Closes G5. ADR-0006.
 - v0.0 Setup and spikes: namespace packages, unittest discovery, race-safe exclusive-create markers and child env needs confirmed.
@@ -15,8 +16,7 @@
 - v0.6 Run and refusal (M6): run.py, demo.py with clean, partial and replay scenarios, honest refusal tests (tests/test_g4_refusal.py). Closes G4. ADR-0005.
 
 ## Next
-- v0.9 Traces and documents: saved real traces, implementation document, acceptance checklist, troubleshooting guide.
-- v1.0 Freeze: all six gates and demo.py pass on a fresh checkout; source archive.
+- (none after v1.0)
 
 ## Later / ideas
 - Monolith baseline for a side-by-side measurement.

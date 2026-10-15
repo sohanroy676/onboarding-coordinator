@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v0.8 Perimeters and hardening (M8, gate G6) is merged to main (5f82863), tagged v0.8.0 and pushed to origin. Full suite 250 tests passing on Python 3.14.2; compileall clean. traces/v0-8-g6.txt is from a real run. v0.7 merged to main (d9fa6f5). Now on feature/v0-9-traces-docs (M9). CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v0.9 Traces and documents (M9) is merged to main (c415761), tagged v0.9.0 at 8fd5b63 and pushed to origin. Full suite 256 tests passing on Python 3.14.2; compileall clean. Gates G1 to G6 pass; traces/v0-9-*.txt are from real runs. Now on docs/v0-9-memory-sync (memory-bank and ROADMAP sync). Next is v1.0 Freeze. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
@@ -36,4 +36,4 @@ v0.8 Perimeters and hardening (M8, gate G6) is merged to main (5f82863), tagged 
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-v0.9 Traces and documents (M9) is done on feature/v0-9-traces-docs (not pushed, not merged): real traces, implementation document, acceptance checklist, troubleshooting guide, and a test that checks the checklist's references. Full suite 256 tests passing; compileall clean. The coordinator-derives-domain-key question is recorded as a stated limit (ADR-0007), not changed.
+v1.0 Freeze: on feature/v1-0-freeze from main, after docs/v0-9-memory-sync is merged. Add a short README, a fresh-checkout section in the acceptance checklist, traces from a clone of the release commit, a v1.0.0 tag (local), and a zip from git archive in dist/ (SHA-256 recorded), tested by extracting it. The coordinator-derives-domain-key question stays a stated limit (ADR-0007). Open: D1 to D12 list (not in repo), 3.12 proof needs a push or a local 3.12.
