@@ -256,6 +256,6 @@ test_secrets_not_in_token (test_unit_tokens.MintTests.test_secrets_not_in_token)
 test_tampered_payload_or_signature_detected (test_unit_tokens.MintTests.test_tampered_payload_or_signature_detected) ... ok
 
 ----------------------------------------------------------------------
-Ran 256 tests in 103.588s
+Ran 256 tests in 101.613s
 
 OK
