@@ -39,8 +39,28 @@ class ProvisionError(Exception):
     """A domain could not be started or failed its health check."""
 
 
+def _agent(name):
+    """Return (spec, module) for a domain name; KeyError for an unknown one."""
+    for agent_name, spec, module in AGENTS:
+        if agent_name == name:
+            return spec, module
+    raise KeyError(name)
+
+
 def _read_ready_line(process, result):
     result.append(process.stdout.readline())
+
+
+def _end_process(process):
+    """Wait for a terminated child, kill it if it ignores that, close its pipes."""
+    try:
+        process.wait(STOP_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait()
+    for pipe in (process.stdout, process.stderr):
+        if pipe is not None:
+            pipe.close()
 
 
 class Provisioner:
@@ -88,16 +108,34 @@ class Provisioner:
     def start(self):
         """Start every domain and health-check it; stop all on failure."""
         try:
-            for name, spec, module in AGENTS:
-                self._start_one(name, spec, module)
+            for name, _spec, _module in AGENTS:
+                self.start_domain(name)
             self.check_health()
         except BaseException:
             self.stop()
             raise
         return dict(self.ports)
 
+    def start_domain(self, name):
+        """Start one domain and wait for its READY line. A restart keeps its port."""
+        if self.running(name):
+            raise ProvisionError("%s is already running" % name)
+        self.stop_domain(name)
+        spec, module = _agent(name)
+        self._start_one(name, spec, module)
+
+    def stop_domain(self, name):
+        """Stop one domain. Its port stays in self.ports for a later restart."""
+        process = self._processes.pop(name, None)
+        if process is not None:
+            _end_process(process)
+
+    def running(self, name):
+        process = self._processes.get(name)
+        return process is not None and process.poll() is None
+
     def _start_one(self, name, spec, module):
-        port = self._port_for(name, spec)
+        port = self.ports.get(name) or self._port_for(name, spec)
         process = subprocess.Popen(
             [sys.executable, "-m", module],
             cwd=str(ROOT),
@@ -127,31 +165,27 @@ class Provisioner:
 
     def check_health(self):
         """GET /capabilities on every domain; raise unless each answers."""
-        for name, spec, _module in AGENTS:
-            url = "http://%s:%d/capabilities" % (HOST, self.ports[name])
-            try:
-                with urllib.request.urlopen(url, timeout=HEALTH_TIMEOUT_SECONDS) as r:
-                    body = json.loads(r.read().decode("utf-8"))
-            except (urllib.error.URLError, OSError, ValueError) as exc:
-                raise ProvisionError("%s failed health check: %s" % (name, exc))
-            if body.get("domain") != name:
-                raise ProvisionError("%s answered as another domain" % name)
+        for name, _spec, _module in AGENTS:
+            self.check_domain_health(name)
+
+    def check_domain_health(self, name):
+        """GET /capabilities on one domain; raise unless it answers as itself."""
+        url = "http://%s:%d/capabilities" % (HOST, self.ports[name])
+        try:
+            with urllib.request.urlopen(url, timeout=HEALTH_TIMEOUT_SECONDS) as r:
+                body = json.loads(r.read().decode("utf-8"))
+        except (urllib.error.URLError, OSError, ValueError) as exc:
+            raise ProvisionError("%s failed health check: %s" % (name, exc))
+        if body.get("domain") != name:
+            raise ProvisionError("%s answered as another domain" % name)
 
     def stop(self):
         """Terminate every child; kill any that ignore terminate."""
         for process in self._processes.values():
             if process.poll() is None:
                 process.terminate()
-        for process in self._processes.values():
-            try:
-                process.wait(STOP_TIMEOUT_SECONDS)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait()
-            for pipe in (process.stdout, process.stderr):
-                if pipe is not None:
-                    pipe.close()
-        self._processes.clear()
+        for name in list(self._processes):
+            self.stop_domain(name)
 
     def __enter__(self):
         self.start()

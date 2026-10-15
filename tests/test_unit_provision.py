@@ -82,6 +82,44 @@ class ProcessTests(unittest.TestCase):
             finally:
                 first.stop()
 
+    def test_one_domain_stops_and_restarts_on_its_port(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prov = provision.Provisioner(state_dir=tmp, ports=EPHEMERAL)
+            prov.start()
+            try:
+                hr_port = prov.ports["hr"]
+                prov.stop_domain("hr")
+                self.assertFalse(prov.running("hr"))
+                self.assertTrue(prov.running("it"))
+                prov.start_domain("hr")
+                self.assertTrue(prov.running("hr"))
+                self.assertEqual(prov.ports["hr"], hr_port)
+                prov.check_domain_health("hr")
+            finally:
+                prov.stop()
+            self.assertFalse(prov.running("it"))
+
+    def test_start_domain_refuses_a_running_domain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prov = provision.Provisioner(state_dir=tmp, ports=EPHEMERAL)
+            prov.start()
+            try:
+                with self.assertRaises(provision.ProvisionError):
+                    prov.start_domain("it")
+                self.assertTrue(prov.running("it"))
+            finally:
+                prov.stop()
+
+    def test_stop_domain_on_a_stopped_domain_is_a_no_op(self):
+        prov = provision.Provisioner(ports=EPHEMERAL)
+        prov.stop_domain("hr")
+        self.assertFalse(prov.running("hr"))
+
+    def test_unknown_domain_name_raises_key_error(self):
+        prov = provision.Provisioner(ports=EPHEMERAL)
+        with self.assertRaises(KeyError):
+            prov.start_domain("payroll")
+
 
 class BoundaryTests(unittest.TestCase):
     """Static checks of the invariants that gates G1 and G2 rely on."""
