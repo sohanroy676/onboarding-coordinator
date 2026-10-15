@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Now
-- v0.6 Run and refusal (M6): implemented on feature/v0-6-run-refusal, awaiting review and merge. Closes G4. ADR-0005.
+- v0.7 Evidence and cost (M7): implemented on feature/v0-7-evidence-cost, awaiting review and merge. Closes G5. ADR-0006.
 
 ## Done
 - v0.0 Setup and spikes: namespace packages, unittest discovery, race-safe exclusive-create markers and child env needs confirmed.
@@ -13,7 +13,6 @@
 - v0.6 Run and refusal (M6): run.py, demo.py with clean, partial and replay scenarios, honest refusal tests (tests/test_g4_refusal.py). Closes G4. ADR-0005.
 
 ## Next
-- v0.7 Evidence and cost (M7): reconstruct.py and the counter-based coordination multiple. Closes G5.
 - v0.8 Perimeters and hardening: credential scan with planted-credential control, import scan, allowed-writes check. Closes G6.
 - v0.9 Traces and documents: saved real traces, implementation document, acceptance checklist, troubleshooting guide.
 - v1.0 Freeze: all six gates and demo.py pass on a fresh checkout; source archive.

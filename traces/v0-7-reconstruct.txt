@@ -1,0 +1,28 @@
+== python -m ledger.reconstruct fe2563bd75789fed
+run id: fe2563bd75789fed
+domain      executed  refused  failed  token_rejected  chain
+hr          2         0        0       0               ok
+it          2         1        0       0               ok
+facilities  2         0        0       0               ok
+total: executed 6  refused 1  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+exit 0
+
+== python -m ledger.reconstruct 02468431591f8759 (scenario 3, aborted replay)
+run id: 02468431591f8759
+domain      executed  refused  failed  token_rejected  chain
+hr          0         0        0       0               ok
+it          0         0        0       0               ok
+facilities  0         0        0       0               ok
+total: executed 0  refused 0  failed 0  token_rejected 0
+no ledger lines carry this run id
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+exit 0

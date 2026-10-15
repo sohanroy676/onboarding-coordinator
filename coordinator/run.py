@@ -31,6 +31,8 @@ MAX_RESPONSE_BYTES = 64 * 1024
 DOMAIN_OUTCOMES = ("executed", "refused", "failed")
 NOT_EXECUTED = "not_executed"
 
+MONOLITH_AUTHORIZATIONS_PER_RUN = 1
+
 SUCCESS = "success"
 PARTIAL = "partial"
 FAILED = "failed"
@@ -68,6 +70,16 @@ class RunReport:
 
 def new_run_id():
     return secrets.token_hex(8)
+
+
+def coordination_multiple(exchange_count, runs):
+    """Token exchanges per run, relative to a monolith that authorizes once per run.
+
+    exchange_count is the minter's real counter after `runs` runs.
+    """
+    if runs < 1:
+        raise ValueError("coordination_multiple needs at least one run")
+    return exchange_count / (runs * MONOLITH_AUTHORIZATIONS_PER_RUN)
 
 
 def post_execute(port, body, timeout):
