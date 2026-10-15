@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v0.8 Perimeters and hardening (M8, gate G6) is implemented on feature/v0-8-perimeters, committed as 6b61f7c (not pushed, not merged). Full suite 250 tests passing on Python 3.14.2; compileall clean. traces/v0-8-g6.txt is from a real run. v0.7 merged to main (d9fa6f5). CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v0.8 Perimeters and hardening (M8, gate G6) is merged to main (5f82863), tagged v0.8.0 and pushed to origin. Full suite 250 tests passing on Python 3.14.2; compileall clean. traces/v0-8-g6.txt is from a real run. v0.7 merged to main (d9fa6f5). Now on feature/v0-9-traces-docs (M9). CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
@@ -36,4 +36,4 @@ v0.8 Perimeters and hardening (M8, gate G6) is implemented on feature/v0-8-perim
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Review feature/v0-8-perimeters (plain-English summary first), then merge to main after approval. Then start v0.9 Traces and documents (M9): saved real traces, implementation document, acceptance checklist, troubleshooting guide. Decide on the coordinator-derives-domain-key question before the faculty review.
+v0.9 Traces and documents (M9) is done on feature/v0-9-traces-docs (not pushed, not merged): real traces, implementation document, acceptance checklist, troubleshooting guide, and a test that checks the checklist's references. Full suite 256 tests passing; compileall clean. The coordinator-derives-domain-key question is recorded as a stated limit (ADR-0007), not changed.

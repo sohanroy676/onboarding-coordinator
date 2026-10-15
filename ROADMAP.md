@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Now
-- v0.8 Perimeters and hardening (M8): implemented on feature/v0-8-perimeters, committed, awaiting review and merge. Closes G6. ADR-0007.
+- v0.9 Traces and documents (M9): on feature/v0-9-traces-docs.
 
 ## Done
+- v0.8 Perimeters and hardening (M8): merged to main (5f82863), tagged v0.8.0. Closes G6. ADR-0007.
 - v0.7 Evidence and cost (M7): ledger rebuild and coordination multiple (tests/test_g5_evidence_cost.py). Closes G5. ADR-0006.
 - v0.0 Setup and spikes: namespace packages, unittest discovery, race-safe exclusive-create markers and child env needs confirmed.
 - v0.1 Foundations: canonical JSON and plan hash, ledger.py with hash chain, tokens.py (key derivation, mint, counter), with unit tests.
