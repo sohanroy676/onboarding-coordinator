@@ -108,3 +108,23 @@ below is the project's deliverable list, supplied by the author. Status words me
 - **The exchange counter resets only if its file is removed.** With `count_path`,
   each exchange is one line in a file (fix/exchange-counter-persist). A restarted
   coordinator resumes the count. A local user can still edit or delete that file.
+
+## Gap fixes after v1.0
+
+Each gap was fixed on its own `fix/` branch, then merged on `integrate/ps3-gaps`
+for the traces below. Every trace is a real run of the merged tree (`traces/v1-1-*.txt`).
+The suite has 279 tests; the gates are G1 15, G2 11, G3 10, G4 7, G5 7, G6 11.
+
+| Gap | Fix | Test | Evidence |
+|---|---|---|---|
+| Write scan missed `Path.open` with a non-literal mode | Non-literal method-open mode counts as a write; urllib `opener` is exempt by name | `test_unit_perimeter_scan.WriteSiteRules.test_path_open_with_non_literal_mode_is_reported` | `traces/v1-1-g6.txt` |
+| Provisioner gave no detail while the child was alive | Child killed after a short wait; its stderr is in the error | `test_unit_provision.ReadyFailureTests.test_silent_child_is_killed_and_its_stderr_is_reported` | `traces/v1-1-tests.txt` |
+| Clock moving backwards treated as fresh | Declaration received after now is refused; approval used before `issued_at` is refused | `test_unit_registry.StalenessTests.test_clock_moved_backwards_is_refused_not_fresh`, `test_unit_approval.ClockTests.test_clock_set_back_before_issue_is_refused_and_writes_no_marker` | `traces/v1-1-tests.txt` |
+| Exchange counter reset on restart | Counter file, one line per exchange, written before the token is returned | `test_unit_tokens.PersistentCounterTests.test_count_survives_a_new_minter_on_the_same_file`, `test_g6_perimeters.RuntimeWrites.test_one_run_changes_only_its_marker_ledgers_and_exchange_count` | `traces/v1-1-demo.txt` (scenario 4: 15 / 5, multiple 3.0) |
+| Deleting a consumed marker re-opened replay | `approval_id` is a token claim; each domain refuses a reused approval (`approval_replayed`) | `test_g3_approval.DomainReplayTests.test_deleted_marker_does_not_re_open_replay_at_the_domains`, `test_unit_domain_http.ApprovalReuseTests.test_second_run_with_the_same_approval_is_refused` | `traces/v1-1-g3.txt`, `traces/v1-1-demo.txt` |
+
+Stated limits that remain after these fixes: a clock rewound to a time still after
+`issued_at` extends an approval (ADR-0004); a local administrator who deletes every
+approval marker and every domain ledger can still replay (ADR-0004, ADR-0003); the
+counter file and the ledgers are plain local files, so they are not tamper-evident
+(ADR-0006); the hash chain cannot detect truncation from the end (ADR-0006).

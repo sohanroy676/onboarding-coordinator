@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Merged docs/ps3-decisions to main (1ad097c) and pushed: ADR-0008 (domain-key limit accepted for v1; D12 requirement changed to docs), narrowed "zero domain credentials" wording, CLAUDE.md secret wording corrected. CI on the push gives the Python 3.12 check; confirm it passed with gh run list.
+Known-gap fixes are on integrate/ps3-gaps (local, not pushed): 279 tests OK, gates G1 to G6 pass, traces traces/v1-1-*.txt. Next: approve the merge of integrate/ps3-gaps to main and the push (plain-English summary first), then confirm CI for the 3.12 check.
