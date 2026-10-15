@@ -21,6 +21,32 @@ taskkill /PID <pid> /F
 Check the other ports (8101, 8103) the same way. Or set `OC_PORT_HR`, `OC_PORT_IT`
 or `OC_PORT_FAC` to free ports.
 
+### Setting `OC_EXCHANGE_SECRET` or `OC_APPROVAL_SECRET` has no effect
+
+**Cause:** the two secrets are not environment variables. `provision.py` creates
+them in memory each time it starts, and no code reads them from the environment.
+Nothing reports a missing one, because nothing reads one.
+
+**Fix:** do not set them. Start the system with `python provision.py` or
+`python demo.py`. Only the domain processes read environment variables.
+
+### `OC_DOMAIN_KEY is missing or not 64 hex digits`
+
+**Cause:** a domain process was started by hand, without the key that
+`provision.py` gives each child. The process exits with code 2 before it binds a
+port, and this message is written to stderr.
+
+**Fix:** start the domains through `python provision.py`, which derives and passes
+each key. Do not run `python -m domains.hr_agent` by itself for a demo run.
+
+### `cannot start <domain>: ...`
+
+**Cause:** the domain could not bind its port or could not open its ledger. The
+text after the colon names the error, for example a port in use or a corrupt ledger.
+
+**Fix:** for a port, see the `did not become ready` entry above. For a ledger, see
+`python -m ledger.reconstruct` in the Ledgers and audit section.
+
 ### Domain processes start but requests fail with socket errors
 
 **Cause:** the child environment lacks `SYSTEMROOT`. `provision.py` gives each
