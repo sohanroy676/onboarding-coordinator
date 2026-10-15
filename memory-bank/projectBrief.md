@@ -16,7 +16,8 @@ v1 is done only when all of the following are true, shown by real terminal runs:
 - Third-party packages of any kind.
 - Retries, rollback or compensation of partial runs.
 - Parallel dispatch to domains.
-- A web interface, a database or configuration files.
+- A database or configuration files.
+- Third-party web frameworks or front-end build tools. A local web interface is planned for v2.0.0 (standard library, 127.0.0.1 only); the "no web interface" line is reversed for v2.0.0 only (see ROADMAP and ADR-0010 draft).
 - Signed capability declarations (a stated limitation).
 - A monolith baseline implementation (G5 compares against a hypothetical monolith count).
 - Any language model in the system.

@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v1.1.0 is released: tag at 122e735, pushed to origin, CI passed on the tagged commit (dispatch run 38719865085) and on main at c5dd871. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Changelog entry is in CHANGELOG.md. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
+Next session starts v1.2.0 (CLI and onboarding core) on branch feat/onboarding-core; plan in ROADMAP "Next". Planning decisions are recorded: CLI and web UI both kept; the UI releases as v2.0.0 (local, standard library, port 8110); no browser tool as a dependency; UI evidence as saved HTTP transcripts. ADR-0009 and ADR-0010 are drafts (Proposed). v1.1.0 is released: tag at 122e735, pushed to origin, CI passed on the tagged commit (dispatch run 38719865085) and on main. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Changelog entry is in CHANGELOG.md. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
