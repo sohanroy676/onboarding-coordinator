@@ -36,4 +36,4 @@ v0.8 Perimeters and hardening (M8, gate G6) is merged to main (5f82863), tagged 
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Finish v0.9 Traces and documents (M9) on feature/v0-9-traces-docs: saved real traces, implementation document, acceptance checklist, troubleshooting guide. The coordinator-derives-domain-key question is recorded as a stated limit (ADR-0007), not changed.
+v0.9 Traces and documents (M9) is done on feature/v0-9-traces-docs (not pushed, not merged): real traces, implementation document, acceptance checklist, troubleshooting guide, and a test that checks the checklist's references. Full suite 256 tests passing; compileall clean. The coordinator-derives-domain-key question is recorded as a stated limit (ADR-0007), not changed.
