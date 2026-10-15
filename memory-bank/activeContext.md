@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Known-gap fixes are on integrate/ps3-gaps (local, not pushed): 279 tests OK, gates G1 to G6 pass, traces traces/v1-1-*.txt. Next: approve the merge of integrate/ps3-gaps to main and the push (plain-English summary first), then confirm CI for the 3.12 check.
+Known-gap fixes merged to main via integrate/ps3-gaps and pushed to origin: 279 tests OK, gates G1 to G6 pass, traces traces/v1-1-*.txt. Next step: see the continuation prompt; confirm CI for the pushed head with gh run list.
