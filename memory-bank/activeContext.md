@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v2.0.0 (local web UI) is built on branch feat/web-ui: 385 tests OK, gates unchanged, transcript traces/v2-0-ui-transcript.txt. Not merged, tagged or pushed; waiting for approval. ADR-0010 accepted.
+v2.0.0 (local web UI) is released: merged to main at e1d262d, tag v2.0.0 pushed, CI green on main and on the tag. Suite 385 OK, gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11. ADR-0010 accepted. Archive rebuilt from the tag (see the checklist, D1). Nothing is planned after it; see ROADMAP.
 v1.2.0 (CLI and onboarding core) is released: merged to main at 4005885, tag v1.2.0 pushed, CI green, release checks passed (clone and extracted archive: 324 tests OK, gates OK; demo exit 0). Release traces traces/v1-2-release-*.txt. Next: v2.0.0 (local web UI, ADR-0010 draft, not started). Pending housekeeping on branch docs/v1-2-release-record: these memory-bank updates.
 Planning decisions are recorded: CLI and web UI both kept; the UI releases as v2.0.0 (local, standard library, port 8110); no browser tool as a dependency; UI evidence as saved HTTP transcripts. ADR-0009 is accepted (v1.2.0); ADR-0010 is still a draft (Proposed). v1.1.0 is released: tag at 122e735, pushed to origin, CI passed on the tagged commit (dispatch run 38719865085) and on main. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Changelog entry is in CHANGELOG.md. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
