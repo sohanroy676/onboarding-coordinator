@@ -156,9 +156,10 @@ class CoordinatorSecretsRefused(DomainSetup):
 class RuntimeWrites(DomainSetup):
     def setUp(self):
         super().setUp()
-        self.minter = TokenMinter(EXCHANGE_SECRET, self.clock)
+        self.minter = TokenMinter(EXCHANGE_SECRET, self.clock,
+                                  count_path=self.state / "exchanges.log")
 
-    def test_one_run_changes_only_its_marker_and_domain_ledgers(self):
+    def test_one_run_changes_only_its_marker_ledgers_and_exchange_count(self):
         plan = build_plan(self.registry, SUBJECT, CLEAN_REQUESTS)
         approval = self.approver.approve(plan)
         before = snapshot(self.state)
@@ -171,6 +172,7 @@ class RuntimeWrites(DomainSetup):
             "hr/ledger.jsonl",
             "it/ledger.jsonl",
             "facilities/ledger.jsonl",
+            "exchanges.log",
         }
         self.assertEqual(changed_paths(before, snapshot(self.state)), expected)
 

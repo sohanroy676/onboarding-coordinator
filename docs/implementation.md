@@ -124,7 +124,8 @@ These are stated, not hidden. Each is also in the acceptance checklist.
   invisible to the chain. The auditor states this.
 - **Write scan** does not see writes through a non-literal `Path.open` mode. The
   runtime snapshot covers only the in-process run, not the child processes.
-- **Exchange counter is per process.** A restarted coordinator starts again.
+- **Exchange counter** is one line per exchange in the counter file the operator
+  gives the minter. Editing or deleting that file changes the count (ADR-0006 amendment).
 - **Coordination multiple** divides exchanges by runs and by a monolith
   denominator of 1 authorization per run. That denominator is an assumption for
   the faculty to dispute (ADR-0006).

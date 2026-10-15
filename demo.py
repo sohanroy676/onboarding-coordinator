@@ -18,7 +18,9 @@ only (provision.py). The domains never see either secret.
 """
 
 import sys
+import tempfile
 import time
+from pathlib import Path
 
 from coordinator.approval import ApprovalGate, Approver
 from coordinator.planner import build_plan, warnings
@@ -68,21 +70,23 @@ def main():
         print("provision failed: " + str(exc))
         return 1
     try:
-        return _scenarios(provisioner)
+        with tempfile.TemporaryDirectory() as counts:
+            return _scenarios(provisioner, Path(counts))
     finally:
         provisioner.stop()
         print()
         print("all domains stopped")
 
 
-def _scenarios(provisioner):
+def _scenarios(provisioner, counts):
     clock = time.time
     registry = Registry(provisioner.ports, clock)
     registry.refresh_all()
     approver = Approver(provisioner.approval_secret, clock)
     gate = ApprovalGate(provisioner.approval_secret, clock,
                         provisioner.state_dir / "approvals")
-    minter = TokenMinter(provisioner.exchange_secret, clock)
+    minter = TokenMinter(provisioner.exchange_secret, clock,
+                         count_path=counts / "scenarios.log")
 
     def run(requests):
         plan = build_plan(registry, SUBJECT, requests)
@@ -103,14 +107,17 @@ def _scenarios(provisioner):
                       ports=provisioner.ports, subject=SUBJECT)
     print_report("scenario 3: replay of the scenario 2 approval", replay)
 
-    _scenario_cost(provisioner, registry, approver, gate, clock, clean.run_id)
+    _scenario_cost(provisioner, registry, approver, gate, clock, clean.run_id,
+                   counts)
     return 0
 
 
-def _scenario_cost(provisioner, registry, approver, gate, clock, clean_run_id):
+def _scenario_cost(provisioner, registry, approver, gate, clock, clean_run_id,
+                   counts):
     print()
     print("== scenario 4: five clean runs, coordination multiple")
-    minter = TokenMinter(provisioner.exchange_secret, clock)
+    minter = TokenMinter(provisioner.exchange_secret, clock,
+                         count_path=counts / "cost.log")
     for number in range(FIVE_RUNS):
         plan = build_plan(registry, SUBJECT, SUPPORTED_REQUESTS)
         approval = approver.approve(plan)

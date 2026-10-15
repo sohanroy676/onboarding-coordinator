@@ -56,6 +56,8 @@ READ_ONLY_OPENERS = frozenset({"opener"})
 ALLOWED_WRITES = Counter({
     ("coordinator/approval.py", "mkdir"): 1,
     ("coordinator/approval.py", "open:x"): 1,
+    ("coordinator/tokens.py", "mkdir"): 1,
+    ("coordinator/tokens.py", "open:a"): 1,
     ("ledger/ledger.py", "mkdir"): 1,
     ("ledger/ledger.py", "open:a"): 1,
 })
