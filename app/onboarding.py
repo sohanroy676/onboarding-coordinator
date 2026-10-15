@@ -105,18 +105,11 @@ def _plan_approve_run(provisioner, subject, requests, ask, post, clock, run_id):
     if not _approved(ask):
         print("not approved: nothing was approved, minted or sent")
         return EXIT_NOT_APPROVED
-    approver = Approver(provisioner.approval_secret, clock)
-    gate = ApprovalGate(provisioner.approval_secret, clock,
-                        provisioner.state_dir / "approvals")
-    minter = TokenMinter(provisioner.exchange_secret, clock,
-                         count_path=provisioner.state_dir / "exchanges.log")
-    approval = approver.approve(plan)
     run_id = run_id or new_run_id()
     print("run id: " + run_id)
     try:
-        report = run_plan(plan, approval, gate=gate, minter=minter,
-                          ports=provisioner.ports, subject=subject, run_id=run_id,
-                          post=post)
+        report = execute_plan(provisioner, plan, post=post, clock=clock,
+                              run_id=run_id)
     except KeyboardInterrupt:
         print("interrupted after approval; the run may be partial. Rebuild with:")
         print("python -m ledger.reconstruct " + run_id)
@@ -125,6 +118,24 @@ def _plan_approve_run(provisioner, subject, requests, ask, post, clock, run_id):
     for line in format_rebuild(reconstruct(report.run_id, provisioner.state_dir)):
         print(line)
     return EXIT_SUCCESS if report.status == SUCCESS else EXIT_NOT_SUCCESS
+
+
+def execute_plan(provisioner, plan, *, post, clock, run_id):
+    """Sign the approval for this plan and run it. Prints nothing.
+
+    Both the console (after a y) and the web UI (after the approve button)
+    call this. run_plan verifies the approval, its expiry and the plan hash
+    before anything is minted or sent.
+    """
+    approver = Approver(provisioner.approval_secret, clock)
+    gate = ApprovalGate(provisioner.approval_secret, clock,
+                        provisioner.state_dir / "approvals")
+    minter = TokenMinter(provisioner.exchange_secret, clock,
+                         count_path=provisioner.state_dir / "exchanges.log")
+    approval = approver.approve(plan)
+    return run_plan(plan, approval, gate=gate, minter=minter,
+                    ports=provisioner.ports, subject=plan["subject"],
+                    run_id=run_id, post=post)
 
 
 def _approved(ask):

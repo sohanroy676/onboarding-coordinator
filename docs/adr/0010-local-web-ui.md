@@ -1,7 +1,7 @@
 # ADR-0010: A local web UI for the onboarding flow (scope change)
 
 ## Status
-Proposed (draft for v2.0.0; accept when the v2.0.0 code lands)
+Accepted (in v2.0.0, branch feat/web-ui; the code and tests landed there)
 
 ## Date
 2026-10-15

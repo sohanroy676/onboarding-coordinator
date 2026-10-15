@@ -1,0 +1,13 @@
+test_five_clean_runs_give_three_exchanges_each_from_the_real_counter (test_g5_evidence_cost.FiveRunsCoordinationMultiple.test_five_clean_runs_give_three_exchanges_each_from_the_real_counter) ... ok
+test_limits_are_printed_for_the_rebuilt_run (test_g5_evidence_cost.FiveRunsCoordinationMultiple.test_limits_are_printed_for_the_rebuilt_run) ... ok
+test_aborted_replay_leaves_no_ledger_line (test_g5_evidence_cost.OneRunRebuilds.test_aborted_replay_leaves_no_ledger_line) ... ok
+test_broken_domain_chain_is_reported_and_exit_code_is_one (test_g5_evidence_cost.OneRunRebuilds.test_broken_domain_chain_is_reported_and_exit_code_is_one) ... ok
+test_clean_run_rebuilds_hr_2_it_2_facilities_2 (test_g5_evidence_cost.OneRunRebuilds.test_clean_run_rebuilds_hr_2_it_2_facilities_2) ... ok
+test_grant_run_shows_the_refusal_in_it (test_g5_evidence_cost.OneRunRebuilds.test_grant_run_shows_the_refusal_in_it) ... ok
+test_rejected_token_is_counted_apart_from_actions (test_g5_evidence_cost.OneRunRebuilds.test_rejected_token_is_counted_apart_from_actions) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 12.132s
+
+OK
+gate g5 exit 0

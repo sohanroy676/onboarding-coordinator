@@ -1,0 +1,601 @@
+# UI on 127.0.0.1:8110, domains on 8101 (hr), 8102 (it), 8103 (facilities)
+
+=== 1. bad Host header is refused ===
+GET / HTTP/1.1
+Host: evil.test:8110
+
+--> HTTP 403
+{
+  "error": "bad_host",
+  "message": "the Host header is not this UI"
+}
+
+=== 2. the page loads with the CSRF token for this start ===
+GET / HTTP/1.1
+Host: 127.0.0.1:8110
+
+--> HTTP 200
+(text/html; charset=utf-8, 1744 bytes)
+
+=== 3. status before any domain is started ===
+GET /api/status HTTP/1.1
+Host: 127.0.0.1:8110
+
+--> HTTP 200
+{
+  "default_requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "domains": {
+    "facilities": {
+      "port": null,
+      "running": false
+    },
+    "hr": {
+      "port": null,
+      "running": false
+    },
+    "it": {
+      "port": null,
+      "running": false
+    }
+  }
+}
+
+=== 4. a plan is refused while the domains are down ===
+POST /api/plans HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 185
+
+{
+  "requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "subject": "new.hire@example.test"
+}
+
+--> HTTP 409
+{
+  "error": "domains_down",
+  "message": "start these domains first: hr, it, facilities"
+}
+
+=== 5. start hr ===
+POST /api/domains/hr/start HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "default_requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "domains": {
+    "facilities": {
+      "port": null,
+      "running": false
+    },
+    "hr": {
+      "port": 8101,
+      "running": true
+    },
+    "it": {
+      "port": null,
+      "running": false
+    }
+  }
+}
+
+=== 6. start it ===
+POST /api/domains/it/start HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "default_requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "domains": {
+    "facilities": {
+      "port": null,
+      "running": false
+    },
+    "hr": {
+      "port": 8101,
+      "running": true
+    },
+    "it": {
+      "port": 8102,
+      "running": true
+    }
+  }
+}
+
+=== 7. start facilities ===
+POST /api/domains/facilities/start HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "default_requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "domains": {
+    "facilities": {
+      "port": 8103,
+      "running": true
+    },
+    "hr": {
+      "port": 8101,
+      "running": true
+    },
+    "it": {
+      "port": 8102,
+      "running": true
+    }
+  }
+}
+
+=== 8. starting a running domain is refused ===
+POST /api/domains/hr/start HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 409
+{
+  "error": "already_running",
+  "message": "hr is already running"
+}
+
+=== 9. a POST without the CSRF token is refused ===
+POST /api/plans HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+Content-Type: application/json
+Content-Length: 70
+
+{
+  "requests": [
+    "hr:create_record"
+  ],
+  "subject": "new.hire@example.test"
+}
+
+--> HTTP 403
+{
+  "error": "bad_csrf",
+  "message": "the CSRF token is missing or wrong"
+}
+
+=== 10. make the plan (six default steps) ===
+POST /api/plans HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 185
+
+{
+  "requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "subject": "new.hire@example.test"
+}
+
+--> HTTP 200
+{
+  "expires_at": 1792080335.7079844,
+  "plan": {
+    "steps": [
+      {
+        "action": "create_record",
+        "classification": "supported",
+        "domain": "hr",
+        "params": {}
+      },
+      {
+        "action": "enroll_benefits",
+        "classification": "supported",
+        "domain": "hr",
+        "params": {}
+      },
+      {
+        "action": "create_account",
+        "classification": "supported",
+        "domain": "it",
+        "params": {}
+      },
+      {
+        "action": "assign_laptop",
+        "classification": "supported",
+        "domain": "it",
+        "params": {}
+      },
+      {
+        "action": "issue_badge",
+        "classification": "supported",
+        "domain": "facilities",
+        "params": {}
+      },
+      {
+        "action": "assign_desk",
+        "classification": "supported",
+        "domain": "facilities",
+        "params": {}
+      }
+    ],
+    "subject": "new.hire@example.test"
+  },
+  "plan_hash": "2a8f9bdd28098b75ec1fe5ee3865a21f47a56c2bdebd8b2411cf1020357f1e20",
+  "warnings": []
+}
+
+=== 11. approve and run the default plan, with the hash the user saw ===
+POST /api/plans/2a8f9bdd28098b75ec1fe5ee3865a21f47a56c2bdebd8b2411cf1020357f1e20/approve HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "abort_code": null,
+  "exchange_count": 9,
+  "rows": [
+    {
+      "action": "create_record",
+      "classification": "supported",
+      "domain": "hr",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "enroll_benefits",
+      "classification": "supported",
+      "domain": "hr",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "create_account",
+      "classification": "supported",
+      "domain": "it",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "assign_laptop",
+      "classification": "supported",
+      "domain": "it",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "issue_badge",
+      "classification": "supported",
+      "domain": "facilities",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "assign_desk",
+      "classification": "supported",
+      "domain": "facilities",
+      "outcome": "executed",
+      "reason": null
+    }
+  ],
+  "run_id": "099e498fc25bd0bf",
+  "status": "success"
+}
+
+=== 12. the same plan cannot be approved twice ===
+POST /api/plans/2a8f9bdd28098b75ec1fe5ee3865a21f47a56c2bdebd8b2411cf1020357f1e20/approve HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 404
+{
+  "error": "plan_not_pending",
+  "message": "no pending plan with this hash; make a new plan"
+}
+
+=== 13. make a plan with a will_not step (warning shown) ===
+POST /api/plans HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 95
+
+{
+  "requests": [
+    "hr:create_record",
+    "it:grant_admin_access"
+  ],
+  "subject": "new.hire@example.test"
+}
+
+--> HTTP 200
+{
+  "expires_at": 1792080336.45319,
+  "plan": {
+    "steps": [
+      {
+        "action": "create_record",
+        "classification": "supported",
+        "domain": "hr",
+        "params": {}
+      },
+      {
+        "action": "grant_admin_access",
+        "classification": "will_not",
+        "domain": "it",
+        "params": {}
+      }
+    ],
+    "subject": "new.hire@example.test"
+  },
+  "plan_hash": "9c91794106b6ecd2bf24752da463181b3a575c60e5ba650bcc61be429b409c5a",
+  "warnings": [
+    "it: grant_admin_access is on the domain's will_not list; the domain will refuse it, and the plan keeps it"
+  ]
+}
+
+=== 14. approve and run the warned plan (partial, one refusal) ===
+POST /api/plans/9c91794106b6ecd2bf24752da463181b3a575c60e5ba650bcc61be429b409c5a/approve HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "abort_code": null,
+  "exchange_count": 11,
+  "rows": [
+    {
+      "action": "create_record",
+      "classification": "supported",
+      "domain": "hr",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "grant_admin_access",
+      "classification": "will_not",
+      "domain": "it",
+      "outcome": "refused",
+      "reason": "will_not"
+    }
+  ],
+  "run_id": "3114e3d180b0136c",
+  "status": "partial"
+}
+
+=== 15. per-domain rebuild of the clean run ===
+GET /api/runs/099e498fc25bd0bf HTTP/1.1
+Host: 127.0.0.1:8110
+
+--> HTTP 200
+{
+  "chain_ok": true,
+  "domains": [
+    {
+      "chain_error": null,
+      "chain_ok": true,
+      "domain": "hr",
+      "outcomes": {
+        "executed": 2
+      },
+      "rejected": 0
+    },
+    {
+      "chain_error": null,
+      "chain_ok": true,
+      "domain": "it",
+      "outcomes": {
+        "executed": 2
+      },
+      "rejected": 0
+    },
+    {
+      "chain_error": null,
+      "chain_ok": true,
+      "domain": "facilities",
+      "outcomes": {
+        "executed": 2
+      },
+      "rejected": 0
+    }
+  ],
+  "limits": [
+    "limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines",
+    "limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger",
+    "limits: an aborted run (approval refused) leaves no ledger line",
+    "limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line",
+    "limits: token_rejected lines can be added by anyone with write access to a ledger file"
+  ],
+  "report": {
+    "abort_code": null,
+    "exchange_count": 9,
+    "rows": [
+      {
+        "action": "create_record",
+        "classification": "supported",
+        "domain": "hr",
+        "outcome": "executed",
+        "reason": null
+      },
+      {
+        "action": "enroll_benefits",
+        "classification": "supported",
+        "domain": "hr",
+        "outcome": "executed",
+        "reason": null
+      },
+      {
+        "action": "create_account",
+        "classification": "supported",
+        "domain": "it",
+        "outcome": "executed",
+        "reason": null
+      },
+      {
+        "action": "assign_laptop",
+        "classification": "supported",
+        "domain": "it",
+        "outcome": "executed",
+        "reason": null
+      },
+      {
+        "action": "issue_badge",
+        "classification": "supported",
+        "domain": "facilities",
+        "outcome": "executed",
+        "reason": null
+      },
+      {
+        "action": "assign_desk",
+        "classification": "supported",
+        "domain": "facilities",
+        "outcome": "executed",
+        "reason": null
+      }
+    ],
+    "run_id": "099e498fc25bd0bf",
+    "status": "success"
+  },
+  "run_id": "099e498fc25bd0bf"
+}
+
+=== 16. a traversal path is not found ===
+GET /static/../server.py HTTP/1.1
+Host: 127.0.0.1:8110
+
+--> HTTP 404
+{
+  "error": "not_found",
+  "message": "no such page"
+}
+
+=== 17. stop facilities ===
+POST /api/domains/facilities/stop HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "default_requests": [
+    "hr:create_record",
+    "hr:enroll_benefits",
+    "it:create_account",
+    "it:assign_laptop",
+    "facilities:issue_badge",
+    "facilities:assign_desk"
+  ],
+  "domains": {
+    "facilities": {
+      "port": 8103,
+      "running": false
+    },
+    "hr": {
+      "port": 8101,
+      "running": true
+    },
+    "it": {
+      "port": 8102,
+      "running": true
+    }
+  }
+}
+
+=== 18. a stopped domain cannot be stopped again ===
+POST /api/domains/facilities/stop HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 409
+{
+  "error": "not_running",
+  "message": "facilities is not running"
+}
+
+# all domains stopped
+

@@ -14,7 +14,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE_FOLDERS = ("domains", "coordinator", "ledger", "app")
 ROOT_SCRIPTS = ("provision.py", "demo.py", "onboard.py")
-TEXT_SUFFIXES = frozenset({".py", ".md", ".txt", ".json", ".yml", ".yaml"})
+TEXT_SUFFIXES = frozenset({".py", ".md", ".txt", ".json", ".yml", ".yaml",
+                           ".html", ".css", ".js"})
 SKIP_DIRS = frozenset({"state", ".git", "__pycache__"})
 
 Finding = namedtuple("Finding", "path line rule")
