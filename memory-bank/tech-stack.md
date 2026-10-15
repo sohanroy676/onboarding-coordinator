@@ -30,11 +30,11 @@
 - Persistent state is plain files under state/: approval marker files and one JSON Lines ledger per domain.
 
 ## Environment variables
-- OC_EXCHANGE_SECRET: coordinator only. Token-minting secret.
-- OC_APPROVAL_SECRET: coordinator and approver step only. Approval-signing secret.
-- OC_DOMAIN_KEY: one per domain process. That domain's derived key (hex).
-- OC_STATE_DIR: where approvals and ledgers live. Default ./state.
-- provision.py creates the secrets in memory and passes each process only its own variables. Nobody sets them by hand.
+- OC_EXCHANGE_SECRET and OC_APPROVAL_SECRET are NOT environment variables. provision.py creates both in memory at start-up and keeps them in its own process; no code reads them from the environment, and no child process receives them.
+- OC_DOMAIN_KEY: one per domain process, set by provision.py. That domain's derived key (hex). Read only by domains/domain_agent.py.
+- OC_STATE_DIR: set by provision.py for each domain process. Where approvals and ledgers live. Default ./state.
+- OC_PORT_HR, OC_PORT_IT, OC_PORT_FAC: optional port overrides, read by provision.py.
+- Each child gets only SYSTEMROOT and PATH from the system, plus its own OC_DOMAIN_KEY, OC_STATE_DIR and port. Nobody sets any of these by hand.
 
 ## Windows notes
 - Child processes get an explicit env: a short allowlist of system variables (SYSTEMROOT, PATH) plus that process's own key.

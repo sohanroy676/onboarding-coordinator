@@ -80,15 +80,19 @@ namespace packages, so every command runs from the project root with `python -m`
   from `domains/`. Only the domains and the auditor use `ledger/`.
 - Token verification lives only in `domain_agent.py`. Minting lives only in
   `tokens.py`. A unit test checks that the two agree.
-- Secrets exist only as process environment variables created in memory by
-  `provision.py`. Each process gets only its own. Nothing is written to a file.
+- The two coordinator secrets are created in memory by `provision.py` and are not
+  environment variables. Nothing is written to a file. No child process receives them.
+- Each domain process gets only its own derived key, through the environment.
 
-| Variable | Given to | Purpose |
-| --- | --- | --- |
-| `OC_EXCHANGE_SECRET` | coordinator | Token-minting secret. |
-| `OC_APPROVAL_SECRET` | coordinator and approver step | Approval-signing secret. |
-| `OC_DOMAIN_KEY` | one domain process | That domain's derived key, in hex. |
-| `OC_STATE_DIR` | all | Where approvals and ledgers live. Default `./state`. |
+| Variable | Set by | Read by | Purpose |
+| --- | --- | --- | --- |
+| `OC_DOMAIN_KEY` | `provision.py`, one per domain | that domain process | That domain's derived key, in hex. |
+| `OC_STATE_DIR` | `provision.py`, per domain | domain processes | Where approvals and ledgers live. Default `./state`. |
+| `OC_PORT_HR`, `OC_PORT_IT`, `OC_PORT_FAC` | operator, optional | `provision.py` | Port overrides. |
+
+The exchange secret and the approval secret are held in `provision.py`'s process
+memory, not in an environment variable. That process is also the coordinator in
+`demo.py`, which is why the exchange secret can derive every domain key (ADR-0007).
 
 ## Design decisions
 

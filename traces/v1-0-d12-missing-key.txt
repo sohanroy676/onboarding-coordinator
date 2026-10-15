@@ -1,0 +1,1 @@
+OC_DOMAIN_KEY is missing or not 64 hex digits

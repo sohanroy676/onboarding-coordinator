@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Open gaps from the D1 to D12 mapping: D12 (missing-secret behaviour and the env-var docs that contradict the code, needs a decision: change the code or the docs), D2 (no traces for v0.2 to v0.5). Domain-key limit stays a stated limit (ADR-0007) for the faculty review. Merged to main and pushed with the v1.0.0 tag; CI on push gives the Python 3.12 check.
+v1.0.0 is on origin/main (merge d706058). Branch fix/d12-secret-docs (49debff, 843435a) holds the D12 docs correction and the D2 re-run traces; it is not merged or pushed, and needs approval to merge and push. Domain-key limit stays a stated limit (ADR-0007) for the faculty review. CI on push gives the Python 3.12 check.
