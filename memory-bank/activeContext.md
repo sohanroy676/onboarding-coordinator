@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-Releasing v1.1.0. The five known-gap fixes are merged to main and pushed (1f6ac88, CI success). Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Release steps are on branches: docs/v1-1-release-notes (this doc update, not merged), then a fresh-clone release check, then tag v1.1.0 (not pushed) and the archive in dist/. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
+v1.1.0 is tagged locally at 122e735 (not pushed). Main is 4 commits ahead of origin/main: the five gap fixes were already on origin; the new commits are the release-notes docs, the fresh-clone release-check traces and the merge commits. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Remaining: merge docs/v1-1-progress, push main and the tag (both need approval), then CI on the tagged commit. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
