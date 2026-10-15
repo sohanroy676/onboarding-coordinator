@@ -123,6 +123,24 @@ the auditor printed.
 **Cause:** an aborted run leaves no ledger line, and a `not_executed` action
 leaves none either. Both are expected (printed as limits by every rebuild).
 
+## Upgrading from v1.0
+
+### Old `state/` from v1.0 is not reused by v1.1
+
+**Cause:** v1.1 changed the token and approval formats. A v1.0 token has no
+`approval_id` claim, and a v1.0 approval has no `issued_at` field.
+
+**What you see:** a domain refuses an old token as `malformed_token`, and the
+coordinator refuses an old approval as `invalid_approval_tag` before any marker
+is written. Nothing runs under an old approval.
+
+**What is still readable:** the v1.0 ledgers. Checked on a real v1.0 run: the
+v1.1 auditor (`python -m ledger.reconstruct <run_id>`) rebuilt all six actions
+with every hash chain `ok`.
+
+**Fix:** delete the old runtime folder and start fresh. `state/` is runtime only
+and is not in git.
+
 ## Traces
 
 Save a trace only from a real run, with shell redirection from the project root.

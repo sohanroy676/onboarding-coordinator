@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v1.1.0 is tagged locally at 122e735 (not pushed). Main is 4 commits ahead of origin/main: the five gap fixes were already on origin; the new commits are the release-notes docs, the fresh-clone release-check traces and the merge commits. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Remaining: merge docs/v1-1-progress, push main and the tag (both need approval), then CI on the tagged commit. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
+v1.1.0 is released: tag at 122e735, pushed to origin, CI passed on the tagged commit (dispatch run 38719865085) and on main at c5dd871. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Changelog entry is in CHANGELOG.md. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
@@ -27,7 +27,7 @@ v1.1.0 is tagged locally at 122e735 (not pushed). Main is 4 commits ahead of ori
 
 ## Blockers / open questions
 - Coordinator can derive domain keys from the exchange secret. Decided for v1 in ADR-0008: stated limit, claim narrowed to "stores and reads no domain key". Strict version needs a broker or a third-party package (future ADR).
-- Local `py -3.12` launcher is broken (python is 3.14.2); suite not yet run on 3.12 locally.
+- Local `py -3.12` launcher is broken (python is 3.14.2); the 3.12 suite runs in CI (green on the v1.1.0 tagged commit), not locally.
 - Hash chain cannot detect removal of the last entries; the auditor states that limit.
 - Replay protection after restart depends on an intact ledger.
 - Clock moving backwards is treated as fresh (registry staleness and approval expiry).
