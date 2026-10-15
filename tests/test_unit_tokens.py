@@ -1,5 +1,7 @@
+import tempfile
 import threading
 import unittest
+from pathlib import Path
 
 from coordinator.tokens import TokenMinter, derive_domain_key
 from tests.helpers import FakeClock, verify_token
@@ -140,3 +142,42 @@ class ExchangeCounterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PersistentCounterTests(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.folder = Path(tmp.name)
+
+    def test_count_survives_a_new_minter_on_the_same_file(self):
+        path = self.folder / "exchanges.log"
+        first = TokenMinter(SECRET, FakeClock(), count_path=path)
+        for domain in ("hr", "it"):
+            first.mint("alice", domain, ["x"], "run-1")
+        restarted = TokenMinter(SECRET, FakeClock(), count_path=path)
+        self.assertEqual(restarted.exchange_count, 2)
+        restarted.mint("alice", "facilities", ["x"], "run-2")
+        self.assertEqual(restarted.exchange_count, 3)
+
+    def test_each_mint_adds_exactly_one_line(self):
+        path = self.folder / "exchanges.log"
+        minter = TokenMinter(SECRET, FakeClock(), count_path=path)
+        for domain in ("hr", "it", "facilities"):
+            minter.mint("alice", domain, ["x"], "run-1")
+        lines = path.read_text(encoding="ascii").splitlines()
+        self.assertEqual(lines, ["1", "2", "3"])
+
+    def test_failed_write_mints_no_token_and_does_not_count(self):
+        blocker = self.folder / "blocker"
+        blocker.write_text("a regular file, not a folder\n", encoding="ascii")
+        minter = TokenMinter(SECRET, FakeClock(), count_path=blocker / "exchanges.log")
+        self.assertEqual(minter.exchange_count, 0)
+        with self.assertRaises(OSError):
+            minter.mint("alice", "hr", ["x"], "run-1")
+        self.assertEqual(minter.exchange_count, 0)
+
+    def test_without_a_path_nothing_is_written(self):
+        minter = TokenMinter(SECRET, FakeClock())
+        minter.mint("alice", "hr", ["x"], "run-1")
+        self.assertEqual(list(self.folder.iterdir()), [])

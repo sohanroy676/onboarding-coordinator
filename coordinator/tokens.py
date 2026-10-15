@@ -12,9 +12,11 @@ Claims: sub (new hire), act (coordinator), aud (one domain), scope
 import base64
 import hashlib
 import hmac
+import os
 import re
 import secrets
 import threading
+from pathlib import Path
 
 from coordinator.planner import canonical_json
 
@@ -56,10 +58,23 @@ def derive_domain_key(exchange_secret, domain):
     return digest.hexdigest()
 
 
-class TokenMinter:
-    """Mints short one-domain tokens and counts every exchange."""
+def _lines_in(path):
+    """Count the lines already in a counter file; a missing file counts as none."""
+    if path is None or not path.is_file():
+        return 0
+    with path.open("r", encoding="ascii") as handle:
+        return sum(1 for _line in handle)
 
-    def __init__(self, exchange_secret, clock, ttl_seconds=DEFAULT_TTL_SECONDS):
+
+class TokenMinter:
+    """Mints short one-domain tokens and counts every exchange.
+
+    With count_path, each exchange is one line appended to that file before
+    the token is returned, so a restarted coordinator resumes the count.
+    """
+
+    def __init__(self, exchange_secret, clock, ttl_seconds=DEFAULT_TTL_SECONDS,
+                 count_path=None):
         if not isinstance(exchange_secret, str) or not exchange_secret:
             raise ValueError("exchange secret must be a non-empty string")
         if ttl_seconds <= 0:
@@ -68,7 +83,8 @@ class TokenMinter:
         self._clock = clock
         self._ttl = ttl_seconds
         self._lock = threading.Lock()
-        self._count = 0
+        self._count_path = Path(count_path) if count_path is not None else None
+        self._count = _lines_in(self._count_path)
 
     @property
     def exchange_count(self):
@@ -103,5 +119,16 @@ class TokenMinter:
         ).digest()
         token = payload + "." + _b64(signature)
         with self._lock:
+            self._record_exchange()
             self._count += 1
         return token
+
+    def _record_exchange(self):
+        """Append this exchange to the counter file; raise if it cannot be written."""
+        if self._count_path is None:
+            return
+        self._count_path.parent.mkdir(parents=True, exist_ok=True)
+        with self._count_path.open("a", encoding="ascii", newline="\n") as handle:
+            handle.write("%d\n" % (self._count + 1))
+            handle.flush()
+            os.fsync(handle.fileno())

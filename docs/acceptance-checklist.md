@@ -99,4 +99,6 @@ below is the project's deliverable list, supplied by the author. Status words me
 - **The write scan does not see non-literal `Path.open` modes.**
 - **The monolith denominator (1 per run) is an assumption** for the faculty to
   dispute (ADR-0006).
-- **The exchange counter is per process.**
+- **The exchange counter resets only if its file is removed.** With `count_path`,
+  each exchange is one line in a file (fix/exchange-counter-persist). A restarted
+  coordinator resumes the count. A local user can still edit or delete that file.
