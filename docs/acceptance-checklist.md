@@ -10,13 +10,13 @@ Run on Python 3.14.2 locally. The Python 3.12 check is CI on `main`.
 
 | Gate | Command | Result | Trace |
 | --- | --- | --- | --- |
-| G1 domains and registry | `python -m unittest discover -s tests -p "test_g1_*.py" -v` | OK | `traces/v1-2-g1.txt` |
-| G2 delegation | `python -m unittest discover -s tests -p "test_g2_*.py" -v` | OK | `traces/v1-2-g2.txt` |
-| G3 one approval | `python -m unittest discover -s tests -p "test_g3_*.py" -v` | OK | `traces/v1-2-g3.txt` |
-| G4 honest refusal | `python -m unittest discover -s tests -p "test_g4_*.py" -v` | OK | `traces/v1-2-g4.txt` |
-| G5 evidence and cost | `python -m unittest discover -s tests -p "test_g5_*.py" -v` | OK | `traces/v1-2-g5.txt` |
-| G6 perimeters | `python -m unittest discover -s tests -p "test_g6_*.py" -v` | OK | `traces/v1-2-g6.txt` |
-| Full suite | `python -m unittest discover -s tests -v` | Ran 323 tests, OK | `traces/v1-2-tests.txt` |
+| G1 domains and registry | `python -m unittest discover -s tests -p "test_g1_*.py" -v` | Ran 15 tests, OK | `traces/v2-0-g1.txt` |
+| G2 delegation | `python -m unittest discover -s tests -p "test_g2_*.py" -v` | Ran 11 tests, OK | `traces/v2-0-g2.txt` |
+| G3 one approval | `python -m unittest discover -s tests -p "test_g3_*.py" -v` | Ran 10 tests, OK | `traces/v2-0-g3.txt` |
+| G4 honest refusal | `python -m unittest discover -s tests -p "test_g4_*.py" -v` | Ran 7 tests, OK | `traces/v2-0-g4.txt` |
+| G5 evidence and cost | `python -m unittest discover -s tests -p "test_g5_*.py" -v` | Ran 7 tests, OK | `traces/v2-0-g5.txt` |
+| G6 perimeters | `python -m unittest discover -s tests -p "test_g6_*.py" -v` | Ran 11 tests, OK | `traces/v2-0-g6.txt` |
+| Full suite | `python -m unittest discover -s tests -v` | Ran 385 tests, OK | `traces/v2-0-tests.txt` |
 | Syntax check | `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app` | Clean | (no output) |
 
 ## Expected results
@@ -156,3 +156,48 @@ human check, and the operator and coordinator share one trust domain (ADR-0009);
 the piped answer is not echoed in the saved trace; `--request` replaces the six
 defaults, so a subset run is possible but a default-plus-extra run needs every
 request listed.
+
+## v2.0 Local web UI
+
+Run from the project root with `python -m app.server` (default port 8110, 127.0.0.1
+only). The UI is a thin layer over `app/onboarding.py`. Approval is a separate button
+that sends the plan hash the user saw (ADR-0010). Each row names the test that proves
+it and the saved trace. The transcript is a real run of `python -m tests.ui_transcript`
+(real domains on 8101 to 8103, UI on 8110). The per-start CSRF token is replaced by
+`<csrf-token>` in the saved text, and nothing else is edited.
+
+| Requirement | Test | Trace |
+| --- | --- | --- |
+| Host header must be 127.0.0.1:port or localhost:port; other names, other ports, a missing header and a DNS-rebinding name are refused | `test_unit_app_server.HostCheckTests.test_localhost_host_is_accepted`, `test_unit_app_server.HostCheckTests.test_other_host_name_is_refused`, `test_unit_app_server.HostCheckTests.test_dns_rebinding_style_host_is_refused`, `test_unit_app_server.HostCheckTests.test_host_with_another_port_is_refused`, `test_unit_app_server.HostCheckTests.test_missing_host_is_refused`, `test_unit_app_server.HostCheckTests.test_bad_host_is_refused_on_a_post_even_with_a_good_token` | `traces/v2-0-tests.txt`, `traces/v2-0-ui-transcript.txt` (step 1) |
+| Every POST needs the per-start CSRF token; missing, wrong and non-ASCII tokens are refused and nothing starts | `test_unit_app_server.OriginAndCsrfTests.test_missing_csrf_token_is_refused`, `test_unit_app_server.OriginAndCsrfTests.test_wrong_csrf_token_is_refused`, `test_unit_app_server.OriginAndCsrfTests.test_csrf_token_with_non_ascii_is_refused_not_crashed`, `test_unit_app_server.OriginAndCsrfTests.test_csrf_is_required_on_every_post` | `traces/v2-0-tests.txt`, `traces/v2-0-ui-transcript.txt` (step 9) |
+| Origin must be this UI; foreign, null and missing Origin are refused | `test_unit_app_server.OriginAndCsrfTests.test_foreign_origin_is_refused`, `test_unit_app_server.OriginAndCsrfTests.test_null_origin_is_refused`, `test_unit_app_server.OriginAndCsrfTests.test_missing_origin_is_refused`, `test_unit_app_server.OriginAndCsrfTests.test_localhost_origin_is_accepted` | `traces/v2-0-tests.txt` |
+| The page carries the token; security headers (CSP, nosniff, no-store) are sent | `test_unit_app_server.OriginAndCsrfTests.test_page_carries_the_token_and_no_placeholder`, `test_unit_app_server.OriginAndCsrfTests.test_page_and_static_responses_carry_the_security_headers` | `traces/v2-0-tests.txt`, `traces/v2-0-ui-transcript.txt` (step 2) |
+| JSON only (415); a body over 16 KB is refused before it is read (413); a body of exactly 16 KB is read; bad JSON, a non-object, and bad length headers (400, 411) are refused | `test_unit_app_server.BodyLimitTests` (all eight tests) | `traces/v2-0-tests.txt` |
+| Static files come from a fixed table; traversal and unknown names are 404; allowlisted files serve with their types | `test_unit_app_server.StaticFileTests.test_traversal_and_unknown_static_paths_are_not_found`, `test_unit_app_server.StaticFileTests.test_allowlisted_files_are_served_with_their_types` | `traces/v2-0-tests.txt`, `traces/v2-0-ui-transcript.txt` (step 16) |
+| Static files are ASCII and load nothing remote; one CSRF placeholder in the page | `test_unit_app_server.StaticFileTests.test_static_files_are_ascii_and_load_nothing_remote`, `test_unit_app_server.StaticFileTests.test_index_has_exactly_one_csrf_placeholder` | `traces/v2-0-tests.txt` |
+| Static files are scanned for credentials by G6 (suffixes .html, .css, .js added) | `test_g6_perimeters.StaticCredentialScan.test_project_tree_has_no_credential_literal` | `traces/v2-0-g6.txt` |
+| Domain start and stop from the page; starting a running domain and stopping a stopped one are refused; unknown name is 404 | `test_unit_app_server.DomainControlTests.test_start_then_status_then_stop`, `test_unit_app_server.DomainControlTests.test_starting_a_running_domain_is_refused`, `test_unit_app_server.DomainControlTests.test_stopping_a_stopped_domain_is_refused`, `test_unit_app_server.DomainControlTests.test_unknown_domain_name_is_not_found` | `traces/v2-0-ui-transcript.txt` (steps 5 to 8, 17, 18) |
+| A domain that fails its health check is stopped again and reported (503) | `test_unit_app_server.DomainControlTests.test_failed_health_check_stops_the_domain_again` | `traces/v2-0-tests.txt` |
+| One domain can be stopped and started on its port; a second start of a running domain is refused in the provisioner | `test_unit_provision.ProcessTests.test_one_domain_stops_and_restarts_on_its_port`, `test_unit_provision.ProcessTests.test_start_domain_refuses_a_running_domain` | `traces/v2-0-tests.txt` |
+| A plan is refused while any domain is down; bad subjects and request text are 400; an unsupported action is refused at planning | `test_unit_app_server.PlanTests.test_plan_is_refused_while_a_domain_is_down`, `test_unit_app_server.PlanTests.test_bad_subjects_are_refused`, `test_unit_app_server.PlanTests.test_bad_request_text_is_refused`, `test_unit_app_server.PlanTests.test_unsupported_action_is_refused_at_planning` | `traces/v2-0-ui-transcript.txt` (step 4) |
+| The plan shows its warnings and hash; nothing runs until approval | `test_unit_app_server.PlanTests.test_plan_shows_warnings_and_its_hash`, `test_unit_app_server.PlanTests.test_plan_is_not_run_until_approved` | `traces/v2-0-ui-transcript.txt` (steps 10, 13) |
+| Approve runs the plan the user saw; secrets never reach the browser | `test_unit_app_server.ApprovalTests.test_approve_runs_the_plan_the_user_saw`, `test_unit_app_server.ApprovalTests.test_secrets_never_reach_the_browser`, `test_unit_app_server.LiveUiFlow.test_plan_approve_and_rebuild_on_real_domains` | `traces/v2-0-ui-transcript.txt` (step 11) |
+| A plan approves once; an unknown or malformed hash is refused | `test_unit_app_server.ApprovalTests.test_a_plan_can_be_approved_only_once`, `test_unit_app_server.ApprovalTests.test_unknown_plan_hash_is_refused`, `test_unit_app_server.ApprovalTests.test_malformed_plan_hash_is_not_found` | `traces/v2-0-ui-transcript.txt` (step 12) |
+| A changed plan is refused with plan_changed and nothing is sent | `test_unit_app_server.ApprovalTests.test_changed_plan_is_refused_and_nothing_is_sent` | `traces/v2-0-tests.txt` |
+| A pending plan expires at its TTL (300 s on the injected clock) and is still valid one second before | `test_unit_app_server.ApprovalTests.test_pending_plan_expires_after_its_ttl`, `test_unit_app_server.ApprovalTests.test_pending_plan_is_still_valid_just_before_its_ttl` | `traces/v2-0-tests.txt` |
+| A domain stopped after planning blocks approval | `test_unit_app_server.ApprovalTests.test_a_domain_stopped_after_planning_blocks_approval` | `traces/v2-0-tests.txt` |
+| One run or domain change at a time (409 busy) | `test_unit_app_server.OneRunAtATimeTests.test_start_is_refused_while_a_run_holds_the_lock`, `test_unit_app_server.OneRunAtATimeTests.test_approve_is_refused_while_a_domain_change_holds_the_lock` | `traces/v2-0-tests.txt` |
+| The run view shows the report and a per-domain rebuild from the ledgers; unknown and malformed run ids are 404 | `test_unit_app_server.RunViewTests.test_run_view_shows_the_report_and_each_domain`, `test_unit_app_server.RunViewTests.test_unknown_run_id_is_not_found`, `test_unit_app_server.RunViewTests.test_malformed_run_id_is_not_found` | `traces/v2-0-ui-transcript.txt` (steps 15, 16) |
+| Live: real domains through the UI; the default run succeeds with six executed and chains ok | `test_unit_app_server.LiveUiFlow.test_plan_approve_and_rebuild_on_real_domains` | `traces/v2-0-ui-transcript.txt` (steps 10, 11, 15) |
+| Live: a will_not step gives partial with one refusal in IT | `test_unit_app_server.LiveUiFlow.test_will_not_step_gives_partial_and_a_refusal_in_it` | `traces/v2-0-ui-transcript.txt` (steps 13, 14) |
+| Live: stopping one domain leaves the others running | `test_unit_app_server.LiveUiFlow.test_stopping_one_domain_leaves_the_others_running` | `traces/v2-0-tests.txt` |
+| The CLI is unchanged: the v1.2 onboarding and live tests still pass after the flow was split | `test_unit_app_onboarding`, `test_unit_app_live` | `traces/v2-0-tests.txt` |
+| The six gates are unchanged (G1 15, G2 11, G3 10, G4 7, G5 7, G6 11) | `test_g1_domains_registry.py`, `test_g2_delegation.py`, `test_g3_approval.py`, `test_g4_refusal.py`, `test_g5_evidence_cost.py`, `test_g6_perimeters.py` | `traces/v2-0-g1.txt` to `traces/v2-0-g6.txt` |
+
+Stated limits for v2.0 (not proven by a gate): the UI runs in the coordinator process,
+so the operator and the coordinator share one trust domain (ADR-0009, ADR-0010). The
+CSRF token is embedded in the page by design, so anyone who can read this page on this
+machine can act as the operator. Pending plans are held only in memory, so a restart of
+the UI drops them. Dispatch stays sequential, so a slow domain makes the request wait.
+No browser was used to test the page. Its behaviour is covered by the HTTP tests and the
+transcript, not by a browser test.
