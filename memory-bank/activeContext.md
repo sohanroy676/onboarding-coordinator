@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v0.9 Traces and documents (M9) is merged to main (c415761), tagged v0.9.0 at 8fd5b63 and pushed to origin. Full suite 256 tests passing on Python 3.14.2; compileall clean. Gates G1 to G6 pass; traces/v0-9-*.txt are from real runs. Now on docs/v0-9-memory-sync (memory-bank and ROADMAP sync). Next is v1.0 Freeze. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v1.0.0 at 4569457, release archive in dist/ with SHA-256 recorded in progress.md. Suite 256 passing on Python 3.14.2 in the clone, the release tree, and the extracted zip; compileall clean; gates G1 to G6 pass. Traces traces/v1-0-*.txt are from a clone of c5c20dc. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken), and it runs only after a push to main.
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
@@ -36,4 +36,4 @@ v0.9 Traces and documents (M9) is merged to main (c415761), tagged v0.9.0 at 8fd
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-v1.0 Freeze: on feature/v1-0-freeze from main, after docs/v0-9-memory-sync is merged. Add a short README, a fresh-checkout section in the acceptance checklist, traces from a clone of the release commit, a v1.0.0 tag (local), and a zip from git archive in dist/ (SHA-256 recorded), tested by extracting it. The coordinator-derives-domain-key question stays a stated limit (ADR-0007). Open: D1 to D12 list (not in repo), 3.12 proof needs a push or a local 3.12.
+Open gaps from the D1 to D12 mapping: D12 (missing-secret behaviour and the env-var docs that contradict the code, needs a decision: change the code or the docs), D2 (no traces for v0.2 to v0.5). Domain-key limit stays a stated limit (ADR-0007) for the faculty review. Merged to main and pushed with the v1.0.0 tag; CI on push gives the Python 3.12 check.
