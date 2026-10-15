@@ -16,7 +16,7 @@ Run on Python 3.14.2 locally. The Python 3.12 check is CI on `main`.
 | G4 honest refusal | `python -m unittest discover -s tests -p "test_g4_*.py" -v` | OK | `traces/v0-9-g4.txt` |
 | G5 evidence and cost | `python -m unittest discover -s tests -p "test_g5_*.py" -v` | OK | `traces/v0-9-g5.txt` |
 | G6 perimeters | `python -m unittest discover -s tests -p "test_g6_*.py" -v` | OK | `traces/v0-9-g6.txt` |
-| Full suite | `python -m unittest discover -s tests -v` | Ran 256 tests, OK | `traces/v0-9-tests.txt` |
+| Full suite | `python -m unittest discover -s tests -v` | Ran 279 tests, OK | `traces/v1-1-tests.txt` |
 | Syntax check | `python -m compileall -q domains coordinator ledger provision.py demo.py` | Clean | (no output) |
 
 ## Expected results

@@ -50,7 +50,7 @@ Key invariants (breaking any of these breaks a gate):
 
 @memory-bank/progress.md
 
-See `ROADMAP.md` for the version plan (v0.0 to v1.0) and what is explicitly not planned.
+See `ROADMAP.md` for the version plan (v0.0 to v1.1) and what is explicitly not planned.
 At the start of a session, the memory bank above is already loaded; read `ROADMAP.md`
 and `memory-bank/systemPatterns.md` when planning a feature.
 

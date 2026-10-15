@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v1.0.0 at 4569457, release archive in dist/ with SHA-256 recorded in progress.md. Suite 256 passing on Python 3.14.2 in the clone, the release tree, and the extracted zip; compileall clean; gates G1 to G6 pass. Traces traces/v1-0-*.txt are from a clone of c5c20dc. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken), and it runs only after a push to main.
+Releasing v1.1.0. The five known-gap fixes are merged to main and pushed (1f6ac88, CI success). Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Release steps are on branches: docs/v1-1-release-notes (this doc update, not merged), then a fresh-clone release check, then tag v1.1.0 (not pushed) and the archive in dist/. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
 ## Recent decisions
 - v0.8: perimeter checks are stdlib tests in tests/perimeter_scan.py, not a module in the source folders (11-file rule). ADR-0007.
