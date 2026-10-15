@@ -37,6 +37,13 @@ class ChildEnvTests(unittest.TestCase):
         self.assertNotEqual(first, second)
         self.assertGreaterEqual(len(first), 32)
 
+    def test_approval_secret_is_random_and_separate_from_exchange(self):
+        first = provision.Provisioner()
+        second = provision.Provisioner()
+        self.assertGreaterEqual(len(first.approval_secret), 32)
+        self.assertNotEqual(first.approval_secret, second.approval_secret)
+        self.assertNotEqual(first.approval_secret, first.exchange_secret)
+
 
 class ProcessTests(unittest.TestCase):
     def test_start_health_and_stop(self):
