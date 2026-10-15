@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Now
-- v1.2.0 is on branch feat/onboarding-core (see Done once it lands). Next is v2.0.0.
+- v1.2.0 is released (tag v1.2.0 at 4005885). Next is v2.0.0 (web UI, not started).
 
 ## Done
 - v1.2 Onboarding core and CLI: `python onboard.py --subject <id>` runs the one flow in `app/onboarding.py` (validate, plan, console approval per ADR-0009, run, rebuild). Exit codes 0 to 4. Tests `tests/test_unit_app_onboarding.py` and `tests/test_unit_app_live.py`; traces `traces/v1-2-*.txt`. No new gate; the six gates are unchanged. Checklist section v1.2.

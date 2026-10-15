@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current focus
-v1.2.0 (CLI and onboarding core) is implemented on feat/onboarding-core: 324 tests OK, gates unchanged, traces v1-2-*. Next: user approval to merge (--no-ff) into main, then push, then tag v1.2.0 and release checks. v2.0.0 (web UI) not started.
+v1.2.0 (CLI and onboarding core) is released: merged to main at 4005885, tag v1.2.0 pushed, CI green, release checks passed (clone and extracted archive: 324 tests OK, gates OK; demo exit 0). Release traces traces/v1-2-release-*.txt. Next: v2.0.0 (local web UI, ADR-0010 draft, not started). Pending housekeeping on branch docs/v1-2-release-record: these memory-bank updates.
 Planning decisions are recorded: CLI and web UI both kept; the UI releases as v2.0.0 (local, standard library, port 8110); no browser tool as a dependency; UI evidence as saved HTTP transcripts. ADR-0009 is accepted (v1.2.0); ADR-0010 is still a draft (Proposed). v1.1.0 is released: tag at 122e735, pushed to origin, CI passed on the tagged commit (dispatch run 38719865085) and on main. Suite 279 passing on Python 3.14.2; gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11; traces traces/v1-1-*.txt. Archive in dist/ (SHA-256 in progress.md). Changelog entry is in CHANGELOG.md. The v1.0.0 tag is at a93b5f9 and its archive SHA is in progress.md. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken); it runs on pushes to main, PRs and manual dispatch, not on tag pushes.
 
 ## Recent decisions
