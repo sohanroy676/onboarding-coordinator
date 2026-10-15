@@ -52,6 +52,6 @@ runtime check diffs a snapshot of `state/` around one run.
   design (per-domain keys held by the domains, with the coordinator signing with
   a key it cannot derive), and is left for a later decision. ADR-0008 accepts
   this as a stated limit for v1.
-- Clock moving backwards, a deleted consumed marker re-opening replay, and
-  truncation from the end of a hash chain (see ADR-0004 and ADR-0006) are not
-  addressed here.
+- Truncation from the end of a hash chain (see ADR-0006) is not addressed here.
+  A deleted consumed marker no longer re-opens replay at the domains (ADR-0004
+  amendment); deleting every marker and ledger still does.

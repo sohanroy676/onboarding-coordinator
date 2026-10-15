@@ -80,7 +80,8 @@ consumed once, and the replay check holds after a restart.
 
 **Fix:** this is the expected result for a replay (demo scenario 3). To run the
 same plan again, sign a fresh approval. Do not delete the consumed marker to get
-around it: deleting it re-opens replay (see the limits).
+around it: the domains also refuse the reused approval (`approval_replayed`), so
+the run executes nothing.
 
 ### `status: aborted (plan_changed_since_approval)`
 

@@ -5,6 +5,7 @@ from coordinator.tokens import TokenMinter, derive_domain_key
 from tests.helpers import FakeClock, verify_token
 
 SECRET = "unit-test-exchange-secret"
+APPROVAL_ID = "f" * 32
 SCOPE_IT = ["create_account", "assign_laptop"]
 
 
@@ -38,7 +39,7 @@ class MintTests(unittest.TestCase):
         self.minter = TokenMinter(SECRET, self.clock, ttl_seconds=60)
 
     def test_claims_are_one_domain_and_exact_scope(self):
-        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1")
+        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1", APPROVAL_ID)
         claims = verify_token(token, derive_domain_key(SECRET, "it"), 1000)
         self.assertEqual(claims["sub"], "alice")
         self.assertEqual(claims["act"], "coordinator")
@@ -49,13 +50,13 @@ class MintTests(unittest.TestCase):
         self.assertEqual(claims["run_id"], "run-1")
 
     def test_other_domain_key_rejects_token(self):
-        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1")
+        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1", APPROVAL_ID)
         with self.assertRaises(ValueError) as caught:
             verify_token(token, derive_domain_key(SECRET, "hr"), 1000)
         self.assertEqual(str(caught.exception), "invalid_signature")
 
     def test_tampered_payload_or_signature_detected(self):
-        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1")
+        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1", APPROVAL_ID)
         key = derive_domain_key(SECRET, "it")
         payload, signature = token.split(".")
         flipped = ("A" if payload[0] != "A" else "B") + payload[1:]
@@ -68,7 +69,7 @@ class MintTests(unittest.TestCase):
             verify_token("nodot", key, 1000)
 
     def test_expiry_follows_injected_clock(self):
-        token = self.minter.mint("alice", "hr", ["create_record"], "run-1")
+        token = self.minter.mint("alice", "hr", ["create_record"], "run-1", APPROVAL_ID)
         key = derive_domain_key(SECRET, "hr")
         verify_token(token, key, 1059)
         with self.assertRaises(ValueError) as caught:
@@ -78,30 +79,31 @@ class MintTests(unittest.TestCase):
     def test_jti_unique(self):
         ids = set()
         for _ in range(50):
-            token = self.minter.mint("alice", "hr", ["create_record"], "run-1")
+            token = self.minter.mint("alice", "hr", ["create_record"], "run-1", APPROVAL_ID)
             claims = verify_token(token, derive_domain_key(SECRET, "hr"), 1000)
             ids.add(claims["jti"])
         self.assertEqual(len(ids), 50)
 
     def test_scope_is_deduplicated_and_sorted(self):
-        token = self.minter.mint("alice", "it", ["b", "a", "b"], "run-1")
+        token = self.minter.mint("alice", "it", ["b", "a", "b"], "run-1", APPROVAL_ID)
         claims = verify_token(token, derive_domain_key(SECRET, "it"), 1000)
         self.assertEqual(claims["scope"], ["a", "b"])
 
     def test_secrets_not_in_token(self):
-        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1")
+        token = self.minter.mint("alice", "it", SCOPE_IT, "run-1", APPROVAL_ID)
         self.assertNotIn(SECRET, token)
         self.assertNotIn(derive_domain_key(SECRET, "it"), token)
 
     def test_invalid_inputs_rejected_and_not_counted(self):
         bad_calls = [
-            ("", "it", ["a"], "r"),
-            ("alice", "IT", ["a"], "r"),
-            ("alice", "it", [], "r"),
-            ("alice", "it", "create_account", "r"),
-            ("alice", "it", ["a", ""], "r"),
-            ("alice", "it", [1], "r"),
-            ("alice", "it", ["a"], ""),
+            ("", "it", ["a"], "r", APPROVAL_ID),
+            ("alice", "IT", ["a"], "r", APPROVAL_ID),
+            ("alice", "it", [], "r", APPROVAL_ID),
+            ("alice", "it", "create_account", "r", APPROVAL_ID),
+            ("alice", "it", ["a", ""], "r", APPROVAL_ID),
+            ("alice", "it", [1], "r", APPROVAL_ID),
+            ("alice", "it", ["a"], "", APPROVAL_ID),
+            ("alice", "it", ["a"], "r", ""),
         ]
         for args in bad_calls:
             with self.assertRaises(ValueError, msg=repr(args)):
@@ -120,7 +122,7 @@ class ExchangeCounterTests(unittest.TestCase):
         minter = TokenMinter(SECRET, FakeClock())
         self.assertEqual(minter.exchange_count, 0)
         for domain in ("hr", "it", "facilities"):
-            minter.mint("alice", domain, ["x"], "run-1")
+            minter.mint("alice", domain, ["x"], "run-1", APPROVAL_ID)
         self.assertEqual(minter.exchange_count, 3)
 
     def test_counter_is_thread_safe(self):
@@ -128,7 +130,7 @@ class ExchangeCounterTests(unittest.TestCase):
 
         def work():
             for _ in range(100):
-                minter.mint("alice", "hr", ["x"], "run-1")
+                minter.mint("alice", "hr", ["x"], "run-1", APPROVAL_ID)
 
         threads = [threading.Thread(target=work) for _ in range(8)]
         for thread in threads:
@@ -140,3 +142,11 @@ class ExchangeCounterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApprovalClaimTests(unittest.TestCase):
+    def test_approval_id_is_a_signed_claim(self):
+        minter = TokenMinter(SECRET, FakeClock(1000.0))
+        token = minter.mint("alice", "it", SCOPE_IT, "run-1", APPROVAL_ID)
+        claims = verify_token(token, derive_domain_key(SECRET, "it"), 1000)
+        self.assertEqual(claims["approval_id"], APPROVAL_ID)

@@ -61,7 +61,8 @@ namespace packages, so every command runs from the project root with `python -m`
    coordinator, audience is that domain, scope is that domain's plan actions. It
    calls `POST /execute` on HR, then IT, then Facilities, once each.
 6. **Decide at the domain.** The domain checks the token (`malformed_token`,
-   `domain_mismatch`, `invalid_signature`, `token_expired`, `token_replayed`),
+   `domain_mismatch`, `invalid_signature`, `token_expired`, `token_replayed`,
+   `approval_replayed`),
    then each action (`out_of_scope`, `will_not`, `unsupported_action`). It writes
    its ledger line, then acts.
 7. **Report.** The coordinator sets the status to `success`, `partial`, `failed`
@@ -117,8 +118,10 @@ These are stated, not hidden. Each is also in the acceptance checklist.
   different key design (ADR-0007). Accepted as a stated limit for v1 (ADR-0008).
 - **Clock moving backwards** is treated as fresh, for registry staleness and
   approval expiry.
-- **Deleting a consumed approval marker re-opens replay.** Markers are plain
-  files, not in any ledger.
+- **Deleting a consumed approval marker** alone does not re-open replay: each
+  domain refuses an approval it has already executed (`approval_replayed`). A
+  local administrator who deletes the markers and all three domain ledgers can
+  still replay.
 - **Hash chain cannot detect truncation from the end.** Removed last lines are
   invisible to the chain. The auditor states this.
 - **Write scan** does not see writes through a non-literal `Path.open` mode. The

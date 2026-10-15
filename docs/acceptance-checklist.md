@@ -93,7 +93,11 @@ below is the project's deliverable list, supplied by the author. Status words me
   stores, reads or names a domain key. It does not show the coordinator cannot
   compute one (`coordinator/tokens.py:88`, ADR-0007).
 - **A clock moving backwards is treated as fresh.**
-- **Deleting a consumed approval marker re-opens replay.**
+- **Deleting a consumed approval marker.** The coordinator's marker is not the
+  only record: each domain refuses an `approval_id` it has already executed
+  (`approval_replayed`, `test_g3_approval.DomainReplayTests`). Deleting the
+  marker alone no longer re-opens replay. Deleting every marker and every domain
+  ledger still does, because a local administrator can do that.
 - **The hash chain cannot detect truncation from the end.** The auditor prints
   this limit in every rebuild.
 - **The write scan does not see non-literal `Path.open` modes.**

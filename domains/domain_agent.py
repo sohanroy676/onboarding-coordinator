@@ -40,7 +40,7 @@ MAX_DRAIN_BYTES = 1024 * 1024
 LEDGER_NAME = "ledger.jsonl"
 
 _B64URL = re.compile(r"[A-Za-z0-9_-]+")
-_CLAIM_STRINGS = ("sub", "act", "aud", "jti", "run_id")
+_CLAIM_STRINGS = ("sub", "act", "aud", "jti", "run_id", "approval_id")
 _CLAIM_NAMES = set(_CLAIM_STRINGS) | {"scope", "iat", "exp"}
 
 HTTP_STATUS = {
@@ -49,6 +49,7 @@ HTTP_STATUS = {
     "invalid_signature": 401,
     "token_expired": 401,
     "token_replayed": 401,
+    "approval_replayed": 401,
 }
 
 
@@ -137,11 +138,11 @@ def _parse_claims(payload):
     return claims
 
 
-def verify_token(token, domain, key_hex, now, seen_jti):
+def verify_token(token, domain, key_hex, now, seen_jti, seen_approvals):
     """Return the claims of a valid token or raise TokenError.
 
-    seen_jti is a container of token IDs already consumed by this domain.
-    This function does not add to it; the caller consumes the token.
+    seen_jti and seen_approvals hold the token IDs and approval IDs this domain
+    has already executed. This function does not add to them; the caller does.
     """
     if not isinstance(token, str) or not token or len(token) > MAX_TOKEN_CHARS:
         raise TokenError("malformed_token")
@@ -166,6 +167,8 @@ def verify_token(token, domain, key_hex, now, seen_jti):
         raise TokenError("token_expired", run_id)
     if claims["jti"] in seen_jti:
         raise TokenError("token_replayed", run_id)
+    if claims["approval_id"] in seen_approvals:
+        raise TokenError("approval_replayed", run_id)
     return claims
 
 
@@ -197,10 +200,14 @@ class DomainAgent:
         self._ledger = Ledger(self._ledger_path, clock)
         self._lock = threading.Lock()
         self._seen_jti = set()
+        self._seen_approvals = set()
         for entry in self._ledger.entries():
             jti = entry["data"].get("jti")
             if jti is not None:
                 self._seen_jti.add(jti)
+            approval_id = entry["data"].get("approval_id")
+            if approval_id is not None:
+                self._seen_approvals.add(approval_id)
 
     @property
     def spec(self):
@@ -232,6 +239,7 @@ class DomainAgent:
                 self._key_hex,
                 self._clock(),
                 self._seen_jti,
+                self._seen_approvals,
             )
         except TokenError as exc:
             return self._reject(exc)
@@ -239,6 +247,7 @@ class DomainAgent:
         if actions is None:
             return 400, {"error": "bad_request"}
         self._seen_jti.add(claims["jti"])
+        self._seen_approvals.add(claims["approval_id"])
         results = []
         try:
             for name, params in actions:
@@ -270,7 +279,8 @@ class DomainAgent:
 
     def _decide_and_act(self, claims, name, params):
         run_id = claims["run_id"]
-        base = {"action": name, "subject": claims["sub"], "jti": claims["jti"]}
+        base = {"action": name, "subject": claims["sub"], "jti": claims["jti"],
+                "approval_id": claims["approval_id"]}
         reason = self._refusal_reason(claims, name)
         if reason is not None:
             self._ledger.append(run_id, "action_refused", dict(base, reason=reason))

@@ -20,7 +20,8 @@ on them.
   is 64 zeros.
 - Domain key: hex of HMAC-SHA256(exchange secret, "oc-domain-key|" + domain).
 - Token: b64url(canonical claims) + "." + b64url(HMAC-SHA256(domain key,
-  payload)). Claims: sub, act, aud, scope, iat, exp, jti, run_id.
+  payload)). Claims: sub, act, aud, scope, iat, exp, jti, run_id, approval_id
+  (approval_id added in the fix/approval-replay-domain amendment).
 - Exchange counter: incremented once per successfully minted token.
 
 ## Alternatives considered
