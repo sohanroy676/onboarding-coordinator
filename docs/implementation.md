@@ -128,8 +128,6 @@ These are stated, not hidden. Each is also in the acceptance checklist.
   denominator of 1 authorization per run. That denominator is an assumption for
   the faculty to dispute (ADR-0006).
 - **Replay protection after restart** depends on an intact ledger.
-- **Provisioner diagnostics.** "did not become ready" gives no detail while the
-  child is still alive.
 - **Local Python 3.12.** The `py -3.12` launcher is broken on the development
   machine. CI on `main` is the 3.12 check.
 - **Signed capability declarations** are not implemented. Declarations are
