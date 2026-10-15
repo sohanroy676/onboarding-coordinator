@@ -1,14 +1,14 @@
 # Roadmap
 
 ## Now
-- Review and merge v0.1 (feature/v0-1-foundations).
+- Review and merge v0.2 (feature/v0-2-domain-agents).
 
 ## Done
 - v0.0 Setup and spikes: namespace packages, unittest discovery, race-safe exclusive-create markers and child env needs confirmed.
 - v0.1 Foundations: canonical JSON and plan hash, ledger.py with hash chain, tokens.py (key derivation, mint, counter), with unit tests.
+- v0.2 Domain agents (M1): domain_agent.py, the three agent files, provision.py; token and action pipeline with ledger writes.
 
 ## Next
-- v0.2 Domain agents (M1): domain_agent.py, the three agent files, provision.py; full request pipeline.
 - v0.3 Registry (M2): staleness, unknown domain, supports(). Closes G1.
 - v0.4 Delegation proven (M3): token attack tests against all three domains. Closes G2.
 - v0.5 Plan and approval (M4, M5): planner and approval, including replay, tamper and race tests. Closes G3.
