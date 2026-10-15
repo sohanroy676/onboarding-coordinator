@@ -8,8 +8,9 @@ Causes that are not verified are not listed.
 ### `provision failed: ... did not become ready`
 
 **Cause:** a domain process from an earlier run is still alive and holds port
-8102 or 8103. The new child cannot bind, so it never prints READY. The error
-gives no detail while the child is still alive (known diagnostic gap).
+8102 or 8103. The new child cannot bind, so it never prints READY. The provisioner
+stops that child after a short wait and prints its stderr after the error, so the
+bind message is shown (the cause above is the usual one).
 
 **Fix:** find and stop the process holding the port, then run again.
 
