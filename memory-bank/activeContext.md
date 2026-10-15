@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Review feature/v1-0-freeze (commits c5c20dc and 4569457, tag v1.0.0) and merge it to main after a plain-English summary and your approval. Then push only with your approval, so CI can give the Python 3.12 check. Open: D1 to D12 list (not in repo, needed before the checklist can map it); the domain-key limit stays a stated limit (ADR-0007), so confirm it for the faculty review.
+Open gaps from the D1 to D12 mapping: D12 (missing-secret behaviour and the env-var docs that contradict the code, needs a decision: change the code or the docs), D2 (no traces for v0.2 to v0.5). Domain-key limit stays a stated limit (ADR-0007) for the faculty review. Merged to main and pushed with the v1.0.0 tag; CI on push gives the Python 3.12 check.
