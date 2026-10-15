@@ -37,6 +37,34 @@ Each expected result from the project brief, in the order the brief lists them.
 | Zero domain credentials in `coordinator/` | `test_g6_perimeters.StaticCredentialScan.test_coordinator_has_no_domain_key_or_env_read` | `v0-9-g6.txt` |
 | Both coordinator secrets rejected as tokens | `test_g6_perimeters.CoordinatorSecretsRefused.test_both_secrets_are_refused_by_every_domain`, and `test_g2_delegation.test_exchange_secret_cannot_sign_a_token`, `test_approval_secret_cannot_sign_a_token` | `v0-9-g6.txt`, `v0-9-g2.txt` |
 
+## Fresh checkout (v1.0)
+
+The v1.0 traces come from a clone of commit `c5c20dc` (the README commit), pinned
+detached and run outside the working tree. The code folders (`domains/`,
+`coordinator/`, `ledger/`, `tests/`, `provision.py`, `demo.py`) are unchanged in the
+release commit that carries these traces, so the traces describe the release code.
+Each file was copied byte-for-byte from the clone, and its SHA-256 matched the copy.
+
+| Check | Result | Trace |
+| --- | --- | --- |
+| Syntax check | Exit 0, no output | (no output) |
+| Full suite | Ran 256 tests, OK | `traces/v1-0-tests.txt` |
+| G1 domains and registry | Ran 15 tests, OK | `traces/v1-0-g1.txt` |
+| G2 delegation | Ran 11 tests, OK | `traces/v1-0-g2.txt` |
+| G3 one approval | Ran 9 tests, OK | `traces/v1-0-g3.txt` |
+| G4 honest refusal | Ran 7 tests, OK | `traces/v1-0-g4.txt` |
+| G5 evidence and cost | Ran 7 tests, OK | `traces/v1-0-g5.txt` |
+| G6 perimeters | Ran 11 tests, OK | `traces/v1-0-g6.txt` |
+| Demo, all scenarios | Exit 0; partial 6/1, replay aborted, multiple 3.0 | `traces/v1-0-demo.txt` |
+| Rebuild of scenario 1 run | Exit 0; hr 2, it 2, facilities 2, all chains ok | `traces/v1-0-reconstruct.txt` |
+
+The release tag `v1.0.0` points at the commit that adds these traces. The release
+archive is `dist/onboarding-coordinator-v1.0.0.zip`, built with `git archive`. Its
+SHA-256 is recorded in `memory-bank/progress.md`, not here, because the archive
+contains this file.
+
+Python 3.12 is not verified locally. The 3.12 check runs in CI on pushes to `main`.
+
 ## Deliverables D1 to D12
 
 The project brief requires deliverables D1 to D12 and says each trace must be

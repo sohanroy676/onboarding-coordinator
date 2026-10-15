@@ -1,0 +1,16 @@
+test_both_secrets_are_refused_by_every_domain (test_g6_perimeters.CoordinatorSecretsRefused.test_both_secrets_are_refused_by_every_domain) ... ok
+test_aborted_replay_writes_nothing (test_g6_perimeters.RuntimeWrites.test_aborted_replay_writes_nothing) ... ok
+test_one_run_changes_only_its_marker_and_domain_ledgers (test_g6_perimeters.RuntimeWrites.test_one_run_changes_only_its_marker_and_domain_ledgers) ... ok
+test_reconstruct_is_read_only (test_g6_perimeters.RuntimeWrites.test_reconstruct_is_read_only) ... ok
+test_coordinator_has_no_domain_key_or_env_read (test_g6_perimeters.StaticCredentialScan.test_coordinator_has_no_domain_key_or_env_read) ... ok
+test_planted_credentials_are_flagged (test_g6_perimeters.StaticCredentialScan.test_planted_credentials_are_flagged) ... ok
+test_project_tree_has_no_credential_literal (test_g6_perimeters.StaticCredentialScan.test_project_tree_has_no_credential_literal) ... ok
+test_planted_cross_import_is_flagged (test_g6_perimeters.StaticImportScan.test_planted_cross_import_is_flagged) ... ok
+test_project_imports_respect_the_boundaries (test_g6_perimeters.StaticImportScan.test_project_imports_respect_the_boundaries) ... ok
+test_planted_write_outside_the_allowlist_is_flagged (test_g6_perimeters.StaticWriteScan.test_planted_write_outside_the_allowlist_is_flagged) ... ok
+test_write_sites_match_the_allowlist_exactly (test_g6_perimeters.StaticWriteScan.test_write_sites_match_the_allowlist_exactly) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 7.444s
+
+OK
