@@ -46,8 +46,10 @@ def _read_ready_line(process, result):
 class Provisioner:
     """Starts the three domain processes in order HR, IT, Facilities."""
 
-    def __init__(self, state_dir=None, ports=None, exchange_secret=None):
+    def __init__(self, state_dir=None, ports=None, exchange_secret=None,
+                 approval_secret=None):
         self._exchange_secret = exchange_secret or secrets.token_hex(32)
+        self._approval_secret = approval_secret or secrets.token_hex(32)
         self._state_dir = Path(state_dir) if state_dir else ROOT / "state"
         self._ports = dict(ports or {})
         self._processes = {}
@@ -57,6 +59,11 @@ class Provisioner:
     def exchange_secret(self):
         """For in-process callers (the coordinator); never printed."""
         return self._exchange_secret
+
+    @property
+    def approval_secret(self):
+        """For in-process callers (coordinator and approver); never printed."""
+        return self._approval_secret
 
     @property
     def state_dir(self):

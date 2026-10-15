@@ -3,9 +3,13 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.4 Delegation (M3, gate G2) is merged to main and tagged v0.4.0, pushed to origin. G2 passes on Python 3.14.2 (126 tests in full suite). CI on Python 3.12.10 has passed for every main push so far, including v0.3.
+v0.5 Plan and approval (M4, M5, gate G3) is built on feature/v0-5-plan-approval from main. Full suite 168 tests passing on Python 3.14.2; compileall clean. Not pushed or merged; waiting for the user's go-ahead. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
 
 ## Recent decisions
+- v0.5: approval replay key is approval_id, not plan hash (a second run of the same plan needs a fresh approval). ADR-0004.
+- v0.5: approval consume is an exclusive-create marker, written only after tag, expiry and plan-hash checks pass.
+- v0.5: coordinator MAC primitives (keyed_digest, constant_time_equal) live in tokens.py, keeping the only-tokens-and-domain-agent-use-HMAC boundary test true.
+- v0.5: unsupported actions (neither supported nor will_not) are refused at planning; will_not actions stay in the plan.
 - HTTP contract, ledger events and per-domain actions fixed in docs/adr/0003-domain-http-contract.md.
 - Rejected tokens write a token_rejected ledger line (attack evidence); an attacker can add such lines, so the v0.7 auditor must count them separately.
 - Domain servers set allow_reuse_address False (Windows SO_REUSEADDR would allow port shadowing).
@@ -21,5 +25,8 @@ v0.4 Delegation (M3, gate G2) is merged to main and tagged v0.4.0, pushed to ori
 - Failed refresh keeps the last good declaration; TTL ages out a permanently dead domain.
 - Staleness is strictly greater than TTL (age equal to TTL is fresh). Negative age (clock moved back) is treated as fresh; known gap.
 
+- Deleting a consumed approval marker in state/approvals re-opens replay. Markers are plain files, not hash-chained; v0.7 auditor must report this.
+- Approval expiry uses the same clock rule as the registry: a clock moving backwards keeps an approval valid longer.
+
 ## Next step
-Start v0.5 Plan and approval (M4, M5) on feature/v0-5-plan-approval from main: planner and approval, with replay, tamper and race tests (ROADMAP.md). Add the approval-secret half of the coordinator-secret check to G2 when approval.py exists. Local py -3.12 still needs reinstalling; CI is the 3.12 check.
+Review the v0.5 diff, then ask the user before pushing feature/v0-5-plan-approval or merging to main (plain-English summary first). After merge, start v0.6 Run and refusal (M6). Local py -3.12 still needs reinstalling; CI is the 3.12 check.

@@ -33,6 +33,16 @@ def _b64(raw):
     return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
+def keyed_digest(key, message):
+    """Raw HMAC-SHA256. The coordinator's only MAC primitive, shared with approval."""
+    return hmac.new(key, message, hashlib.sha256).digest()
+
+
+def constant_time_equal(expected, given):
+    """Compare two ASCII strings or two byte strings without leaking timing."""
+    return hmac.compare_digest(expected, given)
+
+
 def derive_domain_key(exchange_secret, domain):
     """Return the domain's key as a hex string (the OC_DOMAIN_KEY value)."""
     if not isinstance(exchange_secret, str) or not exchange_secret:

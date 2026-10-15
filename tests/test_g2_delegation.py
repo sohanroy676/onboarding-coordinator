@@ -16,6 +16,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from coordinator.approval import derive_approval_key
 from coordinator.tokens import TokenMinter, derive_domain_key
 from domains import facilities_agent, hr_agent, it_agent
 from domains.domain_agent import DomainAgent, make_server
@@ -23,6 +24,7 @@ from ledger.ledger import read_entries, verify_file
 from tests.helpers import FakeClock
 
 SECRET = "g2-exchange-secret"
+APPROVAL_SECRET = "g2-approval-secret"
 RUN = "run-g2"
 HIRE = "new.hire@example.test"
 TTL = 60
@@ -177,6 +179,22 @@ class ForgedSignatureTests(DelegationGateTests):
                 SECRET.encode("utf-8"),
                 unlabelled.digest(),
                 bytes(32),
+            )
+            for key in keys:
+                token = forge(claims_for(name, scope), key)
+                status, body = self.execute(name, token, scope)
+                self.assertEqual((status, body), (401, {"error": "invalid_signature"}))
+                self.assert_rejected_as(name, "invalid_signature")
+            self.assert_nothing_executed(name)
+
+    def test_approval_secret_cannot_sign_a_token(self):
+        for name in NAMES:
+            scope = [self.spec(name).capabilities[0]]
+            unlabelled = hmac.new(APPROVAL_SECRET.encode("utf-8"), name.encode("ascii"), hashlib.sha256)
+            keys = (
+                APPROVAL_SECRET.encode("utf-8"),
+                unlabelled.digest(),
+                derive_approval_key(APPROVAL_SECRET),
             )
             for key in keys:
                 token = forge(claims_for(name, scope), key)
