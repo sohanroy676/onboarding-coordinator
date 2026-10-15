@@ -46,7 +46,7 @@ If `python` is not on PATH, use `py -3.12`.
 - The coordinator can derive every domain key from the exchange secret. Tests show it
   never stores or reads one, but not that it cannot compute one (ADR-0007).
 - A clock that moves backwards is treated as fresh.
-- Deleting a consumed approval marker re-opens replay.
+- Deleting a consumed approval marker alone does not re-open replay; deleting every marker and domain ledger does.
 - The hash chain cannot detect truncation from the end of a ledger.
 - The monolith denominator in the coordination multiple (one authorization per run) is
   an assumption for the faculty to dispute (ADR-0006).

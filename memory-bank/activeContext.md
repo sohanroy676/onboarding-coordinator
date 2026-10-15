@@ -31,7 +31,7 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - Hash chain cannot detect removal of the last entries; the auditor states that limit.
 - Replay protection after restart depends on an intact ledger.
 - Clock moving backwards is treated as fresh (registry staleness and approval expiry).
-- Deleting a consumed approval marker re-opens replay. Markers are plain files, not hash-chained.
+- Deleting a consumed approval marker alone no longer re-opens replay (domains refuse reused approval_id). Deleting every marker and domain ledger still does; local files.
 - Write scan does not see Path.open with a non-literal mode; the runtime snapshot covers only the in-process run.
 - ci.yml compileall now includes demo.py (v0.6 onward).
 

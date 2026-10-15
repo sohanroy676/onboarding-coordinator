@@ -45,9 +45,10 @@ hard to change once runs are recorded, so they are fixed here.
 - Silently skip unsupported actions. Rejected: a plan with an action no domain offers is a planning error.
 
 ## Consequences
-- Deleting a consumed marker re-opens replay. Markers are plain files, not
-  hash-chained, so this is a known limit, the same kind as ledger truncation.
-  Accepted for the prototype; the v0.7 auditor should report it.
+- Deleting a consumed marker re-opens replay at the coordinator only. Amendment
+  (fix/approval-replay-domain): each domain also refuses an `approval_id` it has
+  already executed, so the replay is refused at the domains. Deleting every marker
+  and every domain ledger is still a stated limit (local files).
 - A clock moving backwards keeps an approval valid longer, but only when it is
   rewound to a time still after `issued_at`. A rewind before `issued_at` is refused.
   The rewind window stays a stated limit.

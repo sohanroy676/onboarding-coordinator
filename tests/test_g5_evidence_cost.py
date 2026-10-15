@@ -27,6 +27,7 @@ EXCHANGE_SECRET = "g5-exchange-secret"
 APPROVAL_SECRET = "g5-approval-secret"
 SUBJECT = "new.hire@example.test"
 TTL = 60
+APPROVAL_ID = "e" * 32
 MODULES = {"hr": hr_agent, "it": it_agent, "facilities": facilities_agent}
 CLEAN_REQUESTS = [
     ("hr", "create_record", {"employee": "nh"}),
@@ -125,7 +126,7 @@ class OneRunRebuilds(G5Setup):
 
     def test_rejected_token_is_counted_apart_from_actions(self):
         minter = TokenMinter(EXCHANGE_SECRET, self.clock)
-        token = minter.mint(SUBJECT, "hr", ["create_record"], "g5-wrong-domain")
+        token = minter.mint(SUBJECT, "hr", ["create_record"], "g5-wrong-domain", APPROVAL_ID)
         status, _raw = post_execute(
             self.ports["it"],
             {"token": token, "actions": [{"name": "create_record", "params": {}}]},

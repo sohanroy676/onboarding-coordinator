@@ -166,7 +166,7 @@ def run_plan(plan, approval, *, gate, minter, ports, subject, run_id=None,
             continue
         actions = [{"name": step["action"], "params": step["params"]} for step in steps]
         scope = sorted({step["action"] for step in steps})
-        token = minter.mint(subject, domain, scope, run_id)
+        token = minter.mint(subject, domain, scope, run_id, approval["approval_id"])
         try:
             status, raw = post(ports[domain], {"token": token, "actions": actions}, timeout)
             outcomes = parse_results(actions, status, raw)

@@ -91,12 +91,14 @@ class TokenMinter:
         with self._lock:
             return self._count
 
-    def mint(self, subject, domain, scope, run_id):
+    def mint(self, subject, domain, scope, run_id, approval_id):
         """Mint one token for one domain; count it only once it is built."""
         if not isinstance(subject, str) or not subject:
             raise ValueError("subject must be a non-empty string")
         if not isinstance(run_id, str) or not run_id:
             raise ValueError("run_id must be a non-empty string")
+        if not isinstance(approval_id, str) or not approval_id:
+            raise ValueError("approval_id must be a non-empty string")
         if isinstance(scope, str) or not scope:
             raise ValueError("scope must be a non-empty list of actions")
         if not all(isinstance(item, str) and item for item in scope):
@@ -112,6 +114,7 @@ class TokenMinter:
             "exp": now + self._ttl,
             "jti": secrets.token_hex(16),
             "run_id": run_id,
+            "approval_id": approval_id,
         }
         payload = _b64(canonical_json(claims))
         signature = hmac.new(

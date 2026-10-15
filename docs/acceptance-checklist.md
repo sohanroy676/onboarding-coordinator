@@ -95,7 +95,11 @@ below is the project's deliverable list, supplied by the author. Status words me
 - **A clock moving backwards.** Fixed for a declaration or approval received
   after the current time (refused). A rewind to a time still after the approval's
   issue time extends its life; this is not detected (ADR-0004 amendment).
-- **Deleting a consumed approval marker re-opens replay.**
+- **Deleting a consumed approval marker.** The coordinator's marker is not the
+  only record: each domain refuses an `approval_id` it has already executed
+  (`approval_replayed`, `test_g3_approval.DomainReplayTests`). Deleting the
+  marker alone no longer re-opens replay. Deleting every marker and every domain
+  ledger still does, because a local administrator can do that.
 - **The hash chain cannot detect truncation from the end.** The auditor prints
   this limit in every rebuild.
 - **The write scan does not see non-literal `Path.open` modes.**
