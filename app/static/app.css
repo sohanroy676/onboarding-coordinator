@@ -1,0 +1,180 @@
+:root {
+  --bg: #f7f7f5;
+  --fg: #1d1f21;
+  --muted: #5c6068;
+  --line: #d6d8dc;
+  --accent: #245e9e;
+  --ok: #1d6b3a;
+  --bad: #9b1c1c;
+  --warn: #7a5200;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181b;
+    --fg: #e8e9eb;
+    --muted: #a3a7b0;
+    --line: #3a3d44;
+    --accent: #7db2ef;
+    --ok: #7fd49b;
+    --bad: #f19a9a;
+    --warn: #e8c274;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #17181b;
+  --fg: #e8e9eb;
+  --muted: #a3a7b0;
+  --line: #3a3d44;
+  --accent: #7db2ef;
+  --ok: #7fd49b;
+  --bad: #f19a9a;
+  --warn: #e8c274;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 16px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 system-ui, sans-serif;
+}
+
+header, main {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+header {
+  padding-top: 24px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin: 28px 0 8px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+
+.note {
+  color: var(--muted);
+  margin: 4px 0 12px;
+}
+
+.hash {
+  font-family: ui-monospace, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.warning {
+  color: var(--warn);
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.error {
+  color: var(--bad);
+}
+
+.domain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.domain span {
+  flex: 1 1 auto;
+  color: var(--muted);
+}
+
+.domain span.up {
+  color: var(--ok);
+}
+
+.domain span.down {
+  color: var(--muted);
+}
+
+form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+}
+
+input, textarea {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+  justify-self: start;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.scroll {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 420px;
+}
+
+th, td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+ul.note {
+  padding-left: 20px;
+}
+
+#message {
+  min-height: 1.5em;
+  margin-top: 24px;
+}
