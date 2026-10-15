@@ -11,6 +11,7 @@ from coordinator.approval import (
     ApprovalAlreadyConsumed,
     ApprovalExpired,
     ApprovalGate,
+    ApprovalClockRegressed,
     ApprovalTagInvalid,
     Approver,
     PlanChangedSinceApproval,
@@ -83,7 +84,8 @@ class HappyPathTests(ApprovalCase):
     def test_approval_has_exactly_the_documented_fields(self):
         approval = self.approver.approve(PLAN)
         self.assertEqual(set(approval),
-                         {"approval_id", "plan_hash", "expires_at", "tag"})
+                         {"approval_id", "plan_hash", "issued_at", "expires_at", "tag"})
+        self.assertEqual(approval["issued_at"], 1000)
         self.assertEqual(approval["expires_at"], 1000 + TTL)
 
     def test_approve_refuses_non_positive_ttl(self):
@@ -128,6 +130,7 @@ class TamperTests(ApprovalCase):
             ("approval_id", "0" * 32),
             ("plan_hash", "0" * 64),
             ("expires_at", approval["expires_at"] + 1000),
+            ("issued_at", approval["issued_at"] - 1),
             ("tag", "A" * len(approval["tag"])),
         ]
         for field, value in bad_fields:
@@ -173,6 +176,28 @@ class TamperTests(ApprovalCase):
     def test_gate_refuses_an_empty_secret(self):
         with self.assertRaises(ValueError):
             ApprovalGate("", self.clock, self.markers)
+
+
+class ClockTests(ApprovalCase):
+    def test_approval_used_at_its_issue_time_is_valid(self):
+        approval = self.approver.approve(PLAN)
+        self.gate.verify_and_consume(approval, PLAN)
+
+    def test_clock_set_back_before_issue_is_refused_and_writes_no_marker(self):
+        approval = self.approver.approve(PLAN)
+        self.clock.advance(-1)
+        with self.assertRaises(ApprovalClockRegressed) as caught:
+            self.gate.verify_and_consume(approval, PLAN)
+        self.assertEqual(caught.exception.code, "approval_clock_regressed")
+        self.assertEqual(self.marker_files(), [])
+
+    def test_clock_rewound_after_issue_is_a_stated_limit_not_detected(self):
+        # Limit (ADR-0004): a rewind to a time still after issued_at extends
+        # the approval's life; only a rewind before issued_at is caught.
+        approval = self.approver.approve(PLAN)
+        self.clock.advance(TTL - 10)
+        self.clock.advance(-(TTL - 20))
+        self.gate.verify_and_consume(approval, PLAN)
 
 
 class ExpiryTests(ApprovalCase):

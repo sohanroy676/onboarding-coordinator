@@ -48,6 +48,17 @@ hard to change once runs are recorded, so they are fixed here.
 - Deleting a consumed marker re-opens replay. Markers are plain files, not
   hash-chained, so this is a known limit, the same kind as ledger truncation.
   Accepted for the prototype; the v0.7 auditor should report it.
-- A clock moving backwards keeps an approval valid longer. Known gap, as in the registry.
+- A clock moving backwards keeps an approval valid longer, but only when it is
+  rewound to a time still after `issued_at`. A rewind before `issued_at` is refused.
+  The rewind window stays a stated limit.
+
+## Amendment (fix/clock-backwards): issued_at
+- Approval fields are now `{"approval_id", "plan_hash", "issued_at", "expires_at", "tag"}`.
+  `issued_at` is the integer clock time at approve(); it is covered by the tag.
+- Verification order: tag, then clock (`now < issued_at` is `approval_clock_regressed`,
+  nothing consumed), then expiry, then plan hash, then consume.
+- Approvals in the old format (no `issued_at`) fail the field check as `invalid_approval_tag`.
+- The registry refuses a declaration whose receipt time is after the current clock
+  (`DeclarationStale`, "clock moved backwards").
 - Approvals are signed with a secret only the coordinator and approver hold.
   Domain processes never receive it (provision.py, G2).
