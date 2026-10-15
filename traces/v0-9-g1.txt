@@ -1,0 +1,20 @@
+test_503_is_unavailable (test_g1_domains_registry.BadAnswerTests.test_503_is_unavailable) ... ok
+test_missing_will_not_is_invalid (test_g1_domains_registry.BadAnswerTests.test_missing_will_not_is_invalid) ... ok
+test_non_json_200_is_invalid (test_g1_domains_registry.BadAnswerTests.test_non_json_200_is_invalid) ... ok
+test_answering_as_another_domain_is_refused (test_g1_domains_registry.DomainsDiscoveryTests.test_answering_as_another_domain_is_refused) ... ok
+test_declared_capabilities_are_supported (test_g1_domains_registry.DomainsDiscoveryTests.test_declared_capabilities_are_supported) ... ok
+test_exact_ttl_age_is_fresh_and_one_more_second_is_stale (test_g1_domains_registry.DomainsDiscoveryTests.test_exact_ttl_age_is_fresh_and_one_more_second_is_stale) ... ok
+test_failed_refresh_keeps_last_good_declaration (test_g1_domains_registry.DomainsDiscoveryTests.test_failed_refresh_keeps_last_good_declaration) ... ok
+test_forced_stale_declaration_is_refused_then_refreshed (test_g1_domains_registry.DomainsDiscoveryTests.test_forced_stale_declaration_is_refused_then_refreshed) ... ok
+test_never_discovered_domain_is_missing (test_g1_domains_registry.DomainsDiscoveryTests.test_never_discovered_domain_is_missing) ... ok
+test_three_real_domains_are_discovered (test_g1_domains_registry.DomainsDiscoveryTests.test_three_real_domains_are_discovered) ... ok
+test_undeclared_action_is_unsupported (test_g1_domains_registry.DomainsDiscoveryTests.test_undeclared_action_is_unsupported) ... ok
+test_unknown_domain_raises_keyerror (test_g1_domains_registry.DomainsDiscoveryTests.test_unknown_domain_raises_keyerror) ... ok
+test_unreachable_domain_is_unavailable (test_g1_domains_registry.DomainsDiscoveryTests.test_unreachable_domain_is_unavailable) ... ok
+test_will_not_actions_are_reported_not_dropped (test_g1_domains_registry.DomainsDiscoveryTests.test_will_not_actions_are_reported_not_dropped) ... ok
+test_registry_discovers_children_started_on_port_zero (test_g1_domains_registry.ProvisionerPortZeroTests.test_registry_discovers_children_started_on_port_zero) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 22.385s
+
+OK
