@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Branch docs/ps3-decisions (from main b62a475) holds ADR-0008 (domain-key limit accepted for v1; D12 requirement changed to docs) and the narrowed "zero domain credentials" wording. Not pushed or merged; needs approval to push and merge. Confirm CI for b62a475 passed (it was in progress at last check). CI on push gives the Python 3.12 check.
+Merged docs/ps3-decisions to main (1ad097c) and pushed: ADR-0008 (domain-key limit accepted for v1; D12 requirement changed to docs), narrowed "zero domain credentials" wording, CLAUDE.md secret wording corrected. CI on the push gives the Python 3.12 check; confirm it passed with gh run list.
