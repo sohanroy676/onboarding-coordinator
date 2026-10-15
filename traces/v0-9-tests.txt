@@ -88,6 +88,12 @@ test_monolith_authorizes_once_per_run (test_unit_coordination.CoordinationMultip
 test_one_run_with_three_exchanges_gives_three (test_unit_coordination.CoordinationMultiple.test_one_run_with_three_exchanges_gives_three) ... ok
 test_three_exchanges_per_run_gives_three (test_unit_coordination.CoordinationMultiple.test_three_exchanges_per_run_gives_three) ... ok
 test_zero_runs_is_refused (test_unit_coordination.CoordinationMultiple.test_zero_runs_is_refused) ... ok
+test_checklist_cites_enough_tests (test_unit_docs.AcceptanceChecklistTest.test_checklist_cites_enough_tests) ... ok
+test_every_cited_test_and_trace_exists (test_unit_docs.AcceptanceChecklistTest.test_every_cited_test_and_trace_exists) ... ok
+test_planted_missing_class_is_reported (test_unit_docs.AcceptanceChecklistTest.test_planted_missing_class_is_reported) ... ok
+test_planted_missing_module_is_reported (test_unit_docs.AcceptanceChecklistTest.test_planted_missing_module_is_reported) ... ok
+test_planted_missing_test_is_reported (test_unit_docs.AcceptanceChecklistTest.test_planted_missing_test_is_reported) ... ok
+test_planted_missing_trace_is_reported (test_unit_docs.AcceptanceChecklistTest.test_planted_missing_trace_is_reported) ... ok
 test_each_domain_declares_itself (test_unit_domain_http.CapabilitiesTests.test_each_domain_declares_itself) ... ok
 test_handler_fault_is_reported_not_fatal (test_unit_domain_http.ExecuteTests.test_handler_fault_is_reported_not_fatal) ... ok
 test_happy_path_writes_one_line_per_action (test_unit_domain_http.ExecuteTests.test_happy_path_writes_one_line_per_action) ... ok
@@ -250,6 +256,6 @@ test_secrets_not_in_token (test_unit_tokens.MintTests.test_secrets_not_in_token)
 test_tampered_payload_or_signature_detected (test_unit_tokens.MintTests.test_tampered_payload_or_signature_detected) ... ok
 
 ----------------------------------------------------------------------
-Ran 250 tests in 101.850s
+Ran 256 tests in 103.588s
 
 OK
