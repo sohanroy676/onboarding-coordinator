@@ -1,0 +1,33 @@
+
+== scenario 1: clean run
+run id: be54004723e7e020
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+hr          enroll_benefits    supported      executed   -
+it          create_account     supported      executed   -
+it          assign_laptop      supported      executed   -
+facilities  issue_badge        supported      executed   -
+facilities  assign_desk        supported      executed   -
+status: success  executed 6  refused 0  not_executed 0
+exchanges so far: 3
+
+== scenario 2: grant_admin_access run
+run id: 161643bc3b076c90
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+hr          enroll_benefits    supported      executed   -
+it          create_account     supported      executed   -
+it          assign_laptop      supported      executed   -
+it          grant_admin_access will_not       refused    will_not
+facilities  issue_badge        supported      executed   -
+facilities  assign_desk        supported      executed   -
+status: partial  executed 6  refused 1  not_executed 0
+exchanges so far: 6
+warning: it: grant_admin_access is on the domain's will_not list; the domain will refuse it, and the plan keeps it
+
+== scenario 3: replay of the scenario 2 approval
+run id: 300bec9d3a20b2d4
+status: aborted (approval_already_consumed)
+exchanges so far: 6
+
+all domains stopped

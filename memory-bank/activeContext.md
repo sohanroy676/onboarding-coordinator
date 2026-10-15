@@ -3,9 +3,13 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.5 Plan and approval (M4, M5, gate G3) is merged to main, tagged v0.5.0 and pushed to origin. Full suite 168 tests passing on Python 3.14.2; compileall clean. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v0.6 Run and refusal (M6, gate G4) is implemented on feature/v0-6-run-refusal (not merged, not pushed). Full suite 195 tests passing on Python 3.14.2; compileall clean with demo.py. traces/v0-6-demo.txt is from a real run. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
 
 ## Recent decisions
+- v0.6: domain failure does not stop the run; its actions are not_executed and later domains still run. No retries. ADR-0005.
+- v0.6: tokens minted per domain just before each call; aborted runs (approval refused) mint nothing and leave no ledger line.
+- v0.6: G4 tests run domains in process with the injected clock; provision.py children use the real clock, so real processes are only exercised by demo.py.
+- v0.6: provision.py "did not become ready" gives no detail while the child is still alive. Diagnostic gap, not fixed.
 - v0.5: approval replay key is approval_id, not plan hash (a second run of the same plan needs a fresh approval). ADR-0004.
 - v0.5: approval consume is an exclusive-create marker, written only after tag, expiry and plan-hash checks pass.
 - v0.5: coordinator MAC primitives (keyed_digest, constant_time_equal) live in tokens.py, keeping the only-tokens-and-domain-agent-use-HMAC boundary test true.
@@ -29,4 +33,4 @@ v0.5 Plan and approval (M4, M5, gate G3) is merged to main, tagged v0.5.0 and pu
 - Approval expiry uses the same clock rule as the registry: a clock moving backwards keeps an approval valid longer.
 
 ## Next step
-Start v0.6 Run and refusal (M6) on feature/v0-6-run-refusal from main: run.py, demo.py, clean and partial runs (ROADMAP.md). Local py -3.12 still needs reinstalling; CI is the 3.12 check.
+Review feature/v0-6-run-refusal and merge to main after approval (plain-English summary first). Then start v0.7 Evidence and cost (M7, gate G5): reconstruct.py, counting token_rejected lines separately, and the aborted-run gap in ADR-0005. Local py -3.12 still needs reinstalling; CI is the 3.12 check.
