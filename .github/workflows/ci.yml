@@ -1,0 +1,37 @@
+# CI for the onboarding coordinator. Runs on every push and PR to main, and can be
+# triggered manually from the Actions tab.
+#
+# The project is Python 3.12 on Windows, standard library only: there is no
+# dependency install step, no linter and no formatter. The checks are the syntax
+# check and the unittest suite from tech-stack.md.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Syntax check
+        run: python -m compileall -q domains coordinator ledger provision.py demo.py
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
