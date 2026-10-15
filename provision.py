@@ -47,11 +47,12 @@ class Provisioner:
     """Starts the three domain processes in order HR, IT, Facilities."""
 
     def __init__(self, state_dir=None, ports=None, exchange_secret=None,
-                 approval_secret=None):
+                 approval_secret=None, ready_timeout=READY_TIMEOUT_SECONDS):
         self._exchange_secret = exchange_secret or secrets.token_hex(32)
         self._approval_secret = approval_secret or secrets.token_hex(32)
         self._state_dir = Path(state_dir) if state_dir else ROOT / "state"
         self._ports = dict(ports or {})
+        self._ready_timeout = ready_timeout
         self._processes = {}
         self.ports = {}
 
@@ -111,12 +112,16 @@ class Provisioner:
         reader = threading.Thread(target=_read_ready_line, args=(process, line))
         reader.daemon = True
         reader.start()
-        reader.join(READY_TIMEOUT_SECONDS)
+        reader.join(self._ready_timeout)
         text = line[0].strip() if line else ""
         if not text.startswith("READY "):
-            detail = ""
-            if process.poll() is not None:
-                detail = ": " + process.stderr.read().strip()
+            try:
+                process.wait(STOP_TIMEOUT_SECONDS)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+            stderr = process.stderr.read().strip()
+            detail = ": " + stderr if stderr else ""
             raise ProvisionError("%s did not become ready%s" % (name, detail))
         self.ports[name] = int(text.split()[1])
 

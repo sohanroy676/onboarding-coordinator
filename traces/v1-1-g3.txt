@@ -1,0 +1,15 @@
+test_changed_sub_plan_in_one_domain_is_refused (test_g3_approval.ChangedPlanTests.test_changed_sub_plan_in_one_domain_is_refused) ... ok
+test_dropping_a_will_not_step_is_a_changed_plan (test_g3_approval.ChangedPlanTests.test_dropping_a_will_not_step_is_a_changed_plan) ... ok
+test_deleted_marker_does_not_re_open_replay_at_the_domains (test_g3_approval.DomainReplayTests.test_deleted_marker_does_not_re_open_replay_at_the_domains) ... ok
+test_expired_approval_is_refused_and_leaves_no_marker (test_g3_approval.ExpiryAndReplayTests.test_expired_approval_is_refused_and_leaves_no_marker) ... ok
+test_replay_after_restart_is_refused (test_g3_approval.ExpiryAndReplayTests.test_replay_after_restart_is_refused) ... ok
+test_forced_stale_declaration_refuses_the_plan_before_any_approval (test_g3_approval.OneApprovalTests.test_forced_stale_declaration_refuses_the_plan_before_any_approval) ... ok
+test_one_approval_covers_all_three_domains_and_is_consumed_once (test_g3_approval.OneApprovalTests.test_one_approval_covers_all_three_domains_and_is_consumed_once) ... ok
+test_unknown_domain_raises_keyerror_at_planning (test_g3_approval.OneApprovalTests.test_unknown_domain_raises_keyerror_at_planning) ... ok
+test_will_not_steps_are_approved_and_warned_not_dropped (test_g3_approval.OneApprovalTests.test_will_not_steps_are_approved_and_warned_not_dropped) ... ok
+test_concurrent_consumes_of_one_approval_have_one_winner (test_g3_approval.RaceTests.test_concurrent_consumes_of_one_approval_have_one_winner) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 15.978s
+
+OK

@@ -142,6 +142,9 @@ class Registry:
         if declaration is None:
             raise DeclarationMissing(f"{domain}: never discovered")
         age = self._clock() - declaration.received_at
+        if age < 0:
+            raise DeclarationStale(
+                f"{domain}: clock moved backwards, declaration is {-age:.1f}s ahead")
         if age > self._ttl:
             raise DeclarationStale(
                 f"{domain}: declaration is {age:.1f}s old, TTL is {self._ttl}s")

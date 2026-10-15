@@ -14,6 +14,7 @@ from tests.helpers import FakeClock
 
 SECRET = "unit-test-exchange-secret"
 RUN = "run-0001"
+APPROVAL_ID = "c" * 32
 HIRE = "new.hire@example.test"
 
 
@@ -65,8 +66,8 @@ class DomainServerCase(unittest.TestCase):
         self.stop_server(self.server, self.thread)
         self.start_server()
 
-    def token(self, scope, domain=None):
-        return self.minter.mint(HIRE, domain or self.spec.name, scope, RUN)
+    def token(self, scope, domain=None, run=RUN, approval=APPROVAL_ID):
+        return self.minter.mint(HIRE, domain or self.spec.name, scope, run, approval)
 
     def execute(self, token, names):
         actions = [{"name": name} for name in names]
@@ -288,3 +289,36 @@ class HttpEdgeTests(DomainServerCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApprovalReuseTests(DomainServerCase):
+    def test_second_run_with_the_same_approval_is_refused(self):
+        status, _ = self.execute(self.token(["create_account"]), ["create_account"])
+        self.assertEqual(status, 200)
+        token = self.token(["create_account"], run="run-0002")
+        status, body = self.execute(token, ["create_account"])
+        self.assertEqual(status, 401)
+        self.assertEqual(body["error"], "approval_replayed")
+
+    def test_reuse_is_refused_after_a_restart(self):
+        self.execute(self.token(["create_account"]), ["create_account"])
+        self.restart()
+        token = self.token(["create_account"], run="run-0002")
+        status, body = self.execute(token, ["create_account"])
+        self.assertEqual((status, body["error"]), (401, "approval_replayed"))
+
+    def test_a_new_approval_is_accepted_for_the_same_domain(self):
+        self.execute(self.token(["create_account"]), ["create_account"])
+        token = self.token(["create_account"], run="run-0002", approval="d" * 32)
+        status, _ = self.execute(token, ["create_account"])
+        self.assertEqual(status, 200)
+
+    def test_refused_reuse_executes_nothing_and_records_the_refusal(self):
+        self.execute(self.token(["create_account"]), ["create_account"])
+        token = self.token(["create_account"], run="run-0002")
+        self.execute(token, ["create_account"])
+        entries = self.ledger()
+        events = [entry["event"] for entry in entries]
+        self.assertEqual(events.count("action_executed"), 1)
+        self.assertEqual(entries[-1]["event"], "token_rejected")
+        self.assertEqual(entries[-1]["data"]["reason"], "approval_replayed")

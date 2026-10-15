@@ -2,6 +2,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import provision
 
@@ -120,3 +121,28 @@ class BoundaryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReadyFailureTests(unittest.TestCase):
+    def start_with_child(self, module, ready_timeout):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        prov = provision.Provisioner(state_dir=tmp.name, ports=EPHEMERAL,
+                                     ready_timeout=ready_timeout)
+        child = (("hr", provision.hr_agent.SPEC, module),)
+        with mock.patch.object(provision, "AGENTS", child):
+            with self.assertRaises(provision.ProvisionError) as caught:
+                prov.start()
+        return caught.exception, prov
+
+    def test_silent_child_is_killed_and_its_stderr_is_reported(self):
+        error, prov = self.start_with_child("tests.silent_child", ready_timeout=1)
+        self.assertIn("hr did not become ready", str(error))
+        self.assertIn("bind failed: port in use", str(error))
+        for process in prov._processes.values():
+            self.assertIsNotNone(process.poll())
+
+    def test_child_that_exits_before_ready_reports_its_stderr(self):
+        error, _prov = self.start_with_child("tests.exiting_child", ready_timeout=15)
+        self.assertIn("hr did not become ready", str(error))
+        self.assertIn("config missing", str(error))

@@ -220,6 +220,12 @@ class StalenessTests(unittest.TestCase):
         with self.assertRaises(DeclarationStale):
             self.registry.will_not("hr")
 
+    def test_clock_moved_backwards_is_refused_not_fresh(self):
+        self.clock.advance(-5)
+        with self.assertRaises(DeclarationStale) as caught:
+            self.registry.supports("hr", "create_record")
+        self.assertIn("backwards", str(caught.exception))
+
     def test_refresh_makes_stale_domain_usable_again(self):
         self.clock.advance(61)
         with self.assertRaises(DeclarationStale):

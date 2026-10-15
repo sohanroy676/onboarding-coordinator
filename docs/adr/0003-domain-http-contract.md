@@ -20,7 +20,10 @@ once the registry, run and auditor depend on them.
   and run ID come only from the verified token, never from the body.
 - Token failures return `{"error": code}`: malformed_token 400,
   domain_mismatch 403, invalid_signature 401, token_expired 401,
-  token_replayed 401. Checked in that order. A missing token is malformed.
+  token_replayed 401, approval_replayed 401. Checked in that order. A missing
+  token is malformed. (Amendment, fix/approval-replay-domain: `approval_id` is a
+  required claim; a domain refuses an approval it has already executed, rebuilt
+  from its own ledger on start.)
 - A valid token returns 200 `{"domain", "run_id", "results": [...]}`. Each
   result has `action` and `outcome` (executed, refused or failed); refused
   results carry `reason` (out_of_scope, will_not, unsupported_action, checked

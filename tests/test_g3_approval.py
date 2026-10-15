@@ -20,7 +20,8 @@ from coordinator.approval import (
 )
 from coordinator.planner import build_plan, warnings
 from coordinator.registry import DeclarationStale, Registry
-from coordinator.tokens import derive_domain_key
+from coordinator.run import run_plan
+from coordinator.tokens import TokenMinter, derive_domain_key
 from domains import facilities_agent, hr_agent, it_agent
 from domains.domain_agent import DomainAgent, make_server
 from tests.helpers import FakeClock
@@ -201,3 +202,20 @@ class RaceTests(ApprovalGateSetup):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DomainReplayTests(ApprovalGateSetup):
+    def test_deleted_marker_does_not_re_open_replay_at_the_domains(self):
+        plan = self.plan()
+        approval = self.approver.approve(plan)
+        minter = TokenMinter(EXCHANGE_SECRET, self.clock)
+        first = run_plan(plan, approval, gate=self.gate, minter=minter,
+                         ports=self.ports, subject=SUBJECT)
+        self.assertGreater(first.count("executed"), 0)
+        for marker in self.markers.iterdir():
+            marker.unlink()
+        second = run_plan(plan, approval, gate=self.gate, minter=minter,
+                          ports=self.ports, subject=SUBJECT)
+        self.assertEqual(second.count("executed"), 0)
+        self.assertTrue(all(row.reason == "domain_error:approval_replayed"
+                            for row in second.rows))

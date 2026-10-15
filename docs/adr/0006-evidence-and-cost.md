@@ -41,6 +41,12 @@ are fixed here before the numbers are shown.
 - Persist the exchange counter across processes. Rejected for v0.7: it needs a
   new store and a new trust boundary. The counter is per process, and the
   demo and G5 both run in one process.
+- Amendment (fix/exchange-counter-persist): the counter now survives a restart.
+  `TokenMinter(..., count_path=...)` appends one line per exchange before the
+  token is returned, and counts the lines on start. A failed append raises, so no
+  token is returned and nothing is counted. The file is not tamper-evident, the
+  same limit as the approval markers. The demo gives each run a fresh temporary
+  counter folder, so repeated runs start from zero.
 - Compute the multiple from the plan (3 domains x runs). Rejected: it is not
   evidence; a counter that disagrees with the plan would be hidden.
 

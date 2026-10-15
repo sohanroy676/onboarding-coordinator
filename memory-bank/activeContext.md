@@ -31,9 +31,9 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - Hash chain cannot detect removal of the last entries; the auditor states that limit.
 - Replay protection after restart depends on an intact ledger.
 - Clock moving backwards is treated as fresh (registry staleness and approval expiry).
-- Deleting a consumed approval marker re-opens replay. Markers are plain files, not hash-chained.
+- Deleting a consumed approval marker alone no longer re-opens replay (domains refuse reused approval_id). Deleting every marker and domain ledger still does; local files.
 - Write scan does not see Path.open with a non-literal mode; the runtime snapshot covers only the in-process run.
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-Merged docs/ps3-decisions to main (1ad097c) and pushed: ADR-0008 (domain-key limit accepted for v1; D12 requirement changed to docs), narrowed "zero domain credentials" wording, CLAUDE.md secret wording corrected. CI on the push gives the Python 3.12 check; confirm it passed with gh run list.
+Known-gap fixes merged to main via integrate/ps3-gaps and pushed to origin: 279 tests OK, gates G1 to G6 pass, traces traces/v1-1-*.txt. Next step: see the continuation prompt; confirm CI for the pushed head with gh run list.

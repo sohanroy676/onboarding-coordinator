@@ -48,12 +48,16 @@ WRITE_METHODS = frozenset({
     "remove", "rmdir", "rename",
 })
 WRITE_MODE = re.compile(r"[wax+]")
+# Receivers whose open() only reads: urllib's opener in registry.py and run.py.
+READ_ONLY_OPENERS = frozenset({"opener"})
 
 # Every write site the project is allowed to have, as (file, kind) -> count.
 # Anything else found by write_sites() fails the G6 static check.
 ALLOWED_WRITES = Counter({
     ("coordinator/approval.py", "mkdir"): 1,
     ("coordinator/approval.py", "open:x"): 1,
+    ("coordinator/tokens.py", "mkdir"): 1,
+    ("coordinator/tokens.py", "open:a"): 1,
     ("ledger/ledger.py", "mkdir"): 1,
     ("ledger/ledger.py", "open:a"): 1,
 })
@@ -138,10 +142,21 @@ def scan_imports(root=ROOT):
     return findings
 
 
-def _mode_of(call, is_method):
+def _receiver_name(func):
+    """Return the name a method is called on: opener for opener.open(...)."""
+    value = func.value
+    if isinstance(value, ast.Name):
+        return value.id
+    if isinstance(value, ast.Attribute):
+        return value.attr
+    return None
+
+
+def _mode_of(call, is_method, receiver=None):
     """Return the mode of an open() call: a literal string, "?" if not literal,
-    or None when a method open has no mode (e.g. urllib's opener.open(request)
-    or Path.open()), which is not a file write."""
+    or None when the call is not a file write. A method open with no mode
+    (Path.open()) is a read. A method open on a read-only opener (urllib's
+    opener.open(request)) is never a write, whatever its argument is."""
     position = 0 if is_method else 1
     if len(call.args) > position:
         node = call.args[position]
@@ -151,7 +166,9 @@ def _mode_of(call, is_method):
             return None if is_method else "r"
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
-    return None if is_method else "?"
+    if is_method and receiver in READ_ONLY_OPENERS:
+        return None
+    return "?"
 
 
 def write_sites(path):
@@ -164,7 +181,8 @@ def write_sites(path):
         is_method = isinstance(func, ast.Attribute)
         name = func.attr if is_method else getattr(func, "id", None)
         if name == "open":
-            mode = _mode_of(node, is_method)
+            receiver = _receiver_name(func) if is_method else None
+            mode = _mode_of(node, is_method, receiver)
             if mode is not None and (mode == "?" or WRITE_MODE.search(mode)):
                 sites.append((node.lineno, "open:" + mode))
         elif name in WRITE_METHODS:

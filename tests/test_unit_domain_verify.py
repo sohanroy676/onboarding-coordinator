@@ -12,6 +12,7 @@ from tests.helpers import verify_token as spec_verify_token
 SECRET = "unit-test-exchange-secret"
 RUN = "run-0001"
 HIRE = "new.hire@example.test"
+APPROVAL_ID = "b" * 32
 GOOD_CLAIMS = {
     "sub": HIRE,
     "act": "coordinator",
@@ -21,6 +22,7 @@ GOOD_CLAIMS = {
     "exp": 1060,
     "jti": "a" * 32,
     "run_id": RUN,
+    "approval_id": APPROVAL_ID,
 }
 
 
@@ -44,7 +46,7 @@ class VerifyOrderTests(unittest.TestCase):
         self.other = derive_domain_key(SECRET, "it")
 
     def check(self, token, now=1000, seen=()):
-        return verify_token(token, "hr", self.key, now, set(seen))
+        return verify_token(token, "hr", self.key, now, set(seen), set())
 
     def code(self, token, **kwargs):
         with self.assertRaises(TokenError) as caught:
@@ -145,8 +147,8 @@ class MinterAgreementTests(unittest.TestCase):
     def test_minted_tokens_verify_for_every_domain(self):
         for domain in ("hr", "it", "facilities"):
             key = derive_domain_key(SECRET, domain)
-            token = self.minter.mint(HIRE, domain, ["b", "a", "a"], RUN)
-            real = verify_token(token, domain, key, self.clock(), set())
+            token = self.minter.mint(HIRE, domain, ["b", "a", "a"], RUN, APPROVAL_ID)
+            real = verify_token(token, domain, key, self.clock(), set(), set())
             spec = spec_verify_token(token, key, self.clock())
             self.assertEqual(real, spec)
             self.assertEqual(real["aud"], domain)
@@ -156,15 +158,15 @@ class MinterAgreementTests(unittest.TestCase):
             self.assertEqual(real["run_id"], RUN)
 
     def test_minted_token_for_one_domain_fails_at_another(self):
-        token = self.minter.mint(HIRE, "hr", ["create_record"], RUN)
+        token = self.minter.mint(HIRE, "hr", ["create_record"], RUN, APPROVAL_ID)
         key_it = derive_domain_key(SECRET, "it")
         with self.assertRaises(TokenError) as caught:
-            verify_token(token, "it", key_it, self.clock(), set())
+            verify_token(token, "it", key_it, self.clock(), set(), set())
         self.assertEqual(caught.exception.code, "domain_mismatch")
 
     def test_expiry_agrees_with_spec_checker(self):
         key = derive_domain_key(SECRET, "hr")
-        token = self.minter.mint(HIRE, "hr", ["create_record"], RUN)
+        token = self.minter.mint(HIRE, "hr", ["create_record"], RUN, APPROVAL_ID)
         for now in (1000, 1059, 1060, 1061):
             try:
                 spec_verify_token(token, key, now)
@@ -172,7 +174,7 @@ class MinterAgreementTests(unittest.TestCase):
             except ValueError:
                 spec_ok = False
             try:
-                verify_token(token, "hr", key, now, set())
+                verify_token(token, "hr", key, now, set(), set())
                 real_ok = True
             except TokenError:
                 real_ok = False
@@ -181,12 +183,38 @@ class MinterAgreementTests(unittest.TestCase):
     def test_each_minted_token_has_a_fresh_jti(self):
         seen = set()
         for _ in range(20):
-            token = self.minter.mint(HIRE, "hr", ["create_record"], RUN)
+            token = self.minter.mint(HIRE, "hr", ["create_record"], RUN, APPROVAL_ID)
             key = derive_domain_key(SECRET, "hr")
-            claims = verify_token(token, "hr", key, self.clock(), seen)
+            claims = verify_token(token, "hr", key, self.clock(), seen, set())
             self.assertNotIn(claims["jti"], seen)
             seen.add(claims["jti"])
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApprovalReplayVerifyTests(unittest.TestCase):
+    def setUp(self):
+        self.key = derive_domain_key(SECRET, "hr")
+
+    def test_approval_seen_before_is_refused_as_replayed(self):
+        token = hand_token(GOOD_CLAIMS, self.key)
+        with self.assertRaises(TokenError) as caught:
+            verify_token(token, "hr", self.key, 1000, set(), {APPROVAL_ID})
+        self.assertEqual(caught.exception.code, "approval_replayed")
+
+    def test_signature_is_checked_before_the_approval_check(self):
+        other = derive_domain_key(SECRET, "it")
+        token = hand_token(GOOD_CLAIMS, other)
+        with self.assertRaises(TokenError) as caught:
+            verify_token(token, "hr", self.key, 1000, set(), {APPROVAL_ID})
+        self.assertEqual(caught.exception.code, "invalid_signature")
+
+    def test_token_without_an_approval_id_is_malformed(self):
+        claims = dict(GOOD_CLAIMS)
+        del claims["approval_id"]
+        token = hand_token(claims, self.key)
+        with self.assertRaises(TokenError) as caught:
+            verify_token(token, "hr", self.key, 1000, set(), set())
+        self.assertEqual(caught.exception.code, "malformed_token")

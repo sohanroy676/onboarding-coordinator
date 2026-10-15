@@ -26,6 +26,7 @@ from tests.helpers import FakeClock
 SECRET = "g2-exchange-secret"
 APPROVAL_SECRET = "g2-approval-secret"
 RUN = "run-g2"
+APPROVAL_ID = "e" * 32
 HIRE = "new.hire@example.test"
 TTL = 60
 MODULES = {"hr": hr_agent, "it": it_agent, "facilities": facilities_agent}
@@ -63,6 +64,7 @@ def claims_for(domain, scope, now=1000):
         "exp": now + TTL,
         "jti": "f" * 32,
         "run_id": RUN,
+        "approval_id": APPROVAL_ID,
     }
 
 
@@ -147,7 +149,7 @@ class WrongDomainTests(DelegationGateTests):
             for target in NAMES:
                 if target == owner:
                     continue
-                token = self.minter.mint(HIRE, owner, scope, RUN)
+                token = self.minter.mint(HIRE, owner, scope, RUN, APPROVAL_ID)
                 status, body = self.execute(target, token, scope)
                 self.assertEqual((status, body), (403, {"error": "domain_mismatch"}))
                 self.assert_rejected_as(target, "domain_mismatch")
@@ -207,7 +209,7 @@ class ForgedSignatureTests(DelegationGateTests):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
             forbidden = self.spec(name).will_not[0]
-            real = self.minter.mint(HIRE, name, [own], RUN)
+            real = self.minter.mint(HIRE, name, [own], RUN, APPROVAL_ID)
             _payload, signature = real.split(".")
             widened = encode_claims(claims_for(name, [own, forbidden]))
             token = widened + "." + signature
@@ -219,7 +221,7 @@ class ForgedSignatureTests(DelegationGateTests):
     def test_edited_claims_keep_the_old_signature_and_are_refused(self):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
-            real = self.minter.mint(HIRE, name, [own], RUN)
+            real = self.minter.mint(HIRE, name, [own], RUN, APPROVAL_ID)
             _payload, signature = real.split(".")
             claims = claims_for(name, [own])
             claims["sub"] = "someone.else@example.test"
@@ -233,7 +235,7 @@ class ExpiryAndReplayTests(DelegationGateTests):
     def test_token_is_valid_one_second_before_expiry(self):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
-            token = self.minter.mint(HIRE, name, [own], RUN)
+            token = self.minter.mint(HIRE, name, [own], RUN, APPROVAL_ID)
             self.clock.advance(TTL - 1)
             status, _body = self.execute(name, token, [own])
             self.assertEqual(status, 200)
@@ -241,7 +243,7 @@ class ExpiryAndReplayTests(DelegationGateTests):
     def test_expired_token_is_refused_at_expiry(self):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
-            token = self.minter.mint(HIRE, name, [own], RUN)
+            token = self.minter.mint(HIRE, name, [own], RUN, APPROVAL_ID)
             self.clock.advance(TTL)
             status, body = self.execute(name, token, [own])
             self.assertEqual((status, body), (401, {"error": "token_expired"}))
@@ -251,7 +253,7 @@ class ExpiryAndReplayTests(DelegationGateTests):
     def test_replay_is_refused_before_and_after_restart(self):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
-            token = self.minter.mint(HIRE, name, [own], RUN)
+            token = self.minter.mint(HIRE, name, [own], RUN, APPROVAL_ID)
             self.assertEqual(self.execute(name, token, [own])[0], 200)
             status, body = self.execute(name, token, [own])
             self.assertEqual((status, body), (401, {"error": "token_replayed"}))
@@ -268,7 +270,7 @@ class ScopeAndWillNotTests(DelegationGateTests):
         for name in NAMES:
             own = self.spec(name).capabilities[0]
             forbidden = self.spec(name).will_not[0]
-            token = self.minter.mint(HIRE, name, [own, forbidden], RUN)
+            token = self.minter.mint(HIRE, name, [own, forbidden], RUN, APPROVAL_ID)
             status, body = self.execute(name, token, [own, forbidden])
             self.assertEqual(status, 200)
             self.assertEqual([r["outcome"] for r in body["results"]], ["executed", "refused"])
@@ -282,7 +284,7 @@ class ScopeAndWillNotTests(DelegationGateTests):
     def test_action_outside_token_scope_is_refused(self):
         for name in NAMES:
             caps = self.spec(name).capabilities
-            token = self.minter.mint(HIRE, name, [caps[0]], RUN)
+            token = self.minter.mint(HIRE, name, [caps[0]], RUN, APPROVAL_ID)
             status, body = self.execute(name, token, [caps[1]])
             self.assertEqual(status, 200)
             self.assertEqual(body["results"][0]["reason"], "out_of_scope")

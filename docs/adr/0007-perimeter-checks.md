@@ -39,9 +39,10 @@ runtime check diffs a snapshot of `state/` around one run.
 - Test fixture placeholders are exempt by exact quoted value only, listed in
   `FIXTURE_SECRETS`. Any new fixture that looks like a secret must be added there
   deliberately, which leaves a visible record.
-- The write scan does not see writes through a non-literal `Path.open` mode.
-  That is a known gap; the runtime snapshot covers the in-process run only, not
-  the child processes that `provision.py` starts.
+- The write scan treats a non-literal mode on any method `open` as a write,
+  except on the read-only `opener` (urllib, fix/write-scan-path-open). The runtime
+  snapshot covers the in-process run only, not the child processes that
+  `provision.py` starts.
 
 ## Limits the scan cannot prove
 - **The coordinator can derive every domain key.** `TokenMinter` holds the
@@ -52,6 +53,6 @@ runtime check diffs a snapshot of `state/` around one run.
   design (per-domain keys held by the domains, with the coordinator signing with
   a key it cannot derive), and is left for a later decision. ADR-0008 accepts
   this as a stated limit for v1.
-- Clock moving backwards, a deleted consumed marker re-opening replay, and
-  truncation from the end of a hash chain (see ADR-0004 and ADR-0006) are not
-  addressed here.
+- Truncation from the end of a hash chain (see ADR-0006) is not addressed here.
+  A deleted consumed marker no longer re-opens replay at the domains (ADR-0004
+  amendment); deleting every marker and ledger still does.

@@ -61,7 +61,8 @@ namespace packages, so every command runs from the project root with `python -m`
    coordinator, audience is that domain, scope is that domain's plan actions. It
    calls `POST /execute` on HR, then IT, then Facilities, once each.
 6. **Decide at the domain.** The domain checks the token (`malformed_token`,
-   `domain_mismatch`, `invalid_signature`, `token_expired`, `token_replayed`),
+   `domain_mismatch`, `invalid_signature`, `token_expired`, `token_replayed`,
+   `approval_replayed`),
    then each action (`out_of_scope`, `will_not`, `unsupported_action`). It writes
    its ledger line, then acts.
 7. **Report.** The coordinator sets the status to `success`, `partial`, `failed`
@@ -115,21 +116,23 @@ These are stated, not hidden. Each is also in the acceptance checklist.
   from the environment, or names a domain key. It does not prove the coordinator
   cannot compute one. Standard library HMAC cannot remove this without a
   different key design (ADR-0007). Accepted as a stated limit for v1 (ADR-0008).
-- **Clock moving backwards** is treated as fresh, for registry staleness and
-  approval expiry.
-- **Deleting a consumed approval marker re-opens replay.** Markers are plain
-  files, not in any ledger.
+- **Clock moving backwards.** A declaration or approval stamped after the
+  current time is refused. A rewind to a time still after the approval's issue
+  time extends its life and is not detected (ADR-0004 amendment).
+- **Deleting a consumed approval marker** alone does not re-open replay: each
+  domain refuses an approval it has already executed (`approval_replayed`). A
+  local administrator who deletes the markers and all three domain ledgers can
+  still replay.
 - **Hash chain cannot detect truncation from the end.** Removed last lines are
   invisible to the chain. The auditor states this.
 - **Write scan** does not see writes through a non-literal `Path.open` mode. The
   runtime snapshot covers only the in-process run, not the child processes.
-- **Exchange counter is per process.** A restarted coordinator starts again.
+- **Exchange counter** is one line per exchange in the counter file the operator
+  gives the minter. Editing or deleting that file changes the count (ADR-0006 amendment).
 - **Coordination multiple** divides exchanges by runs and by a monolith
   denominator of 1 authorization per run. That denominator is an assumption for
   the faculty to dispute (ADR-0006).
 - **Replay protection after restart** depends on an intact ledger.
-- **Provisioner diagnostics.** "did not become ready" gives no detail while the
-  child is still alive.
 - **Local Python 3.12.** The `py -3.12` launcher is broken on the development
   machine. CI on `main` is the 3.12 check.
 - **Signed capability declarations** are not implemented. Declarations are
