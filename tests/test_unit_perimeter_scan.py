@@ -8,6 +8,7 @@ from pathlib import Path
 from tests.perimeter_scan import (
     FIXTURE_SECRETS,
     changed_paths,
+    scan_imports,
     scan_secrets,
     snapshot,
     write_sites,
@@ -138,6 +139,34 @@ class SnapshotRules(unittest.TestCase):
 
     def test_missing_folder_has_an_empty_snapshot(self):
         self.assertEqual(snapshot(Path(tempfile.gettempdir()) / "no-such-oc-dir"), {})
+
+
+class AppImportRules(unittest.TestCase):
+    """app/ may use coordinator and ledger.reconstruct, never domains or ledger.ledger."""
+
+    def findings_for(self, module_text):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "app").mkdir()
+            (root / "app" / "bad.py").write_text(module_text, encoding="ascii")
+            return sorted(f.rule for f in scan_imports(root))
+
+    def test_planted_domains_import_from_app_is_flagged(self):
+        self.assertEqual(self.findings_for("from domains import hr_agent\n"),
+                         ["import domains from app"])
+
+    def test_planted_ledger_internals_import_from_app_is_flagged(self):
+        self.assertEqual(self.findings_for("import ledger.ledger\n"),
+                         ["import ledger.ledger from app"])
+        self.assertEqual(self.findings_for("from ledger.ledger import read_entries\n"),
+                         ["import ledger.ledger from app"])
+
+    def test_allowed_imports_from_app_are_not_flagged(self):
+        text = ("import coordinator.run\n"
+                "from ledger.reconstruct import reconstruct\n"
+                "import provision\n"
+                "import demo\n")
+        self.assertEqual(self.findings_for(text), [])
 
 
 if __name__ == "__main__":

@@ -12,8 +12,8 @@ from collections import Counter, namedtuple
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE_FOLDERS = ("domains", "coordinator", "ledger")
-ROOT_SCRIPTS = ("provision.py", "demo.py")
+SOURCE_FOLDERS = ("domains", "coordinator", "ledger", "app")
+ROOT_SCRIPTS = ("provision.py", "demo.py", "onboard.py")
 TEXT_SUFFIXES = frozenset({".py", ".md", ".txt", ".json", ".yml", ".yaml"})
 SKIP_DIRS = frozenset({"state", ".git", "__pycache__"})
 
@@ -68,6 +68,10 @@ FORBIDDEN_IMPORTS = {
     "coordinator": frozenset({"domains", "ledger"}),
     "ledger": frozenset({"coordinator", "domains"}),
 }
+# app/ is the operator flow (ADR-0009, ADR-0010): it may use coordinator,
+# ledger.reconstruct and the operator modules, never domains or ledger internals.
+APP_FOLDER = "app"
+APP_FORBIDDEN_MODULES = ("domains", "ledger.ledger")
 HMAC_IMPORTERS = frozenset({"coordinator/tokens.py", "domains/domain_agent.py"})
 
 
@@ -127,6 +131,21 @@ def imported_names(path):
     return names
 
 
+def imported_modules(path):
+    """Return the full dotted module names that a module imports."""
+    modules = set()
+    for node in ast.walk(_parse(path)):
+        if isinstance(node, ast.Import):
+            modules.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            modules.add(node.module)
+    return modules
+
+
+def _is_module_or_inside(module, prefix):
+    return module == prefix or module.startswith(prefix + ".")
+
+
 def scan_imports(root=ROOT):
     """Return a Finding for each forbidden cross-package or hmac import."""
     findings = []
@@ -134,6 +153,11 @@ def scan_imports(root=ROOT):
         for path in sorted((root / folder).glob("*.py")):
             for name in sorted(imported_names(path) & forbidden):
                 rule = "import %s from %s" % (name, folder)
+                findings.append(Finding(_relpath(path, root), 0, rule))
+    for path in sorted((root / APP_FOLDER).glob("*.py")):
+        for module in sorted(imported_modules(path)):
+            if any(_is_module_or_inside(module, prefix) for prefix in APP_FORBIDDEN_MODULES):
+                rule = "import %s from app" % module
                 findings.append(Finding(_relpath(path, root), 0, rule))
     for path in _source_files(root):
         rel = _relpath(path, root)

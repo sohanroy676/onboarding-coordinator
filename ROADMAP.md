@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Now
-- Nothing in progress. Next session starts v1.2.0 (see Next).
+- v1.2.0 is on branch feat/onboarding-core (see Done once it lands). Next is v2.0.0.
 
 ## Done
+- v1.2 Onboarding core and CLI: `python onboard.py --subject <id>` runs the one flow in `app/onboarding.py` (validate, plan, console approval per ADR-0009, run, rebuild). Exit codes 0 to 4. Tests `tests/test_unit_app_onboarding.py` and `tests/test_unit_app_live.py`; traces `traces/v1-2-*.txt`. No new gate; the six gates are unchanged. Checklist section v1.2.
 - v1.1 Known-gap fixes: five gaps closed on main (1f6ac88), 279 tests, gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11, traces traces/v1-1-*.txt. Fixed: write scan missed Path.open with a non-literal mode; provisioner gave no detail for a silent child; a clock moved backwards was treated as fresh; the exchange counter reset on restart; a deleted consumed approval marker re-opened replay at the domains (approval_id is now a token claim, ADR-0003, ADR-0004, ADR-0006). Token format changed, so this is a minor release. Stated limits stay as in the checklist "Stated limits" section (ADR-0004, ADR-0006, ADR-0007, ADR-0008).
 - v1.0 Freeze: all six gates and demo.py pass on a fresh checkout; source archive; checklist maps D1 to D12.
 - v0.9 Traces and documents (M9): merged to main (c415761), tagged v0.9.0. Real traces, implementation document, acceptance checklist, troubleshooting guide.
@@ -18,9 +19,6 @@
 - v0.6 Run and refusal (M6): run.py, demo.py with clean, partial and replay scenarios, honest refusal tests (tests/test_g4_refusal.py). Closes G4. ADR-0005.
 
 ## Next
-- **v1.2.0 Onboarding core and CLI** (minor, no scope change). `app/onboarding.py` holds the one onboarding flow: validate the subject and requests, start the three domains, build and show the plan with its warnings, ask for approval at the console, run the plan, rebuild the run from the ledgers, and stop the domains. `onboard.py` is a thin wrapper.
-  - Acceptance: `python onboard.py --subject <email>` answering `y` (approved), `n` (declined) and a will_not request (partial) each runs from the project root, and each console run is saved as a trace (`traces/v1-2-onboard-*.txt`). Unit tests (`tests/test_unit_app_onboarding.py`) and live tests on real domains (`tests/test_unit_app_live.py`).
-  - Decision record: ADR-0009 (draft: console approval).
 - **v2.0.0 Local web UI** (major: reverses the "no web interface" scope, local only). `app/server.py` and `app/static/` (vanilla HTML, CSS and JS; no build step, no CDN, ASCII only) on 127.0.0.1, default port 8110. Pages: domain status with start and stop; new onboarding; plan with warnings; a separate approve-and-run button that sends the plan hash the user saw; run view with the per-domain rebuild.
   - Security: Host header check, per-start CSRF token on every POST, Origin check, JSON only, 16 KB body limit, fixed static allowlist, no secret in the page.
   - Acceptance: `tests/test_unit_app_server.py` (HTTP on port 0) and the live flow against real domains, plus a saved HTTP transcript from a real run (`traces/v2-0-ui-transcript.txt`). No browser tool is a project dependency; screenshots stay out of git.

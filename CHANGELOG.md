@@ -5,6 +5,12 @@ Format follows Keep a Changelog. Generated from Conventional Commits — regener
 
 ## [Unreleased]
 
+### Added
+- `python onboard.py --subject <id>`: the onboarding flow from the console. It validates the subject and requests, prints the plan and its warnings, asks for approval, runs the plan and rebuilds it from the ledgers (ADR-0009, `app/onboarding.py`).
+- Exit codes 0 to 4 for the CLI (success, not successful, bad input or plan refused, not approved, domains did not start).
+- Tests: `tests/test_unit_app_onboarding.py` (fake prompt and domains), `tests/test_unit_app_live.py` (real domains on port 0).
+- G6 import scan covers `app/`: it may not import `domains` or `ledger.ledger`.
+
 ## [1.1.0] - 2026-10-15
 
 Known-gap fixes after v1.0. Minor release: the token and approval formats changed.

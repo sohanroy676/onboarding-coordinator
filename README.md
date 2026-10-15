@@ -23,13 +23,39 @@ Run every command from the project root.
 ```
 python provision.py                                      # start, health-check and stop the domains
 python demo.py                                           # run every scenario and print the traces
+python onboard.py --subject <id>                        # plan, approve at the console, run, rebuild
 python -m unittest discover -s tests -v                  # full test suite
 python -m unittest discover -s tests -p "test_g1_*.py" -v   # one gate (g1 to g6)
-python -m compileall -q domains coordinator ledger provision.py demo.py   # syntax check
+python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app   # syntax check
 python -m ledger.reconstruct <run_id>                    # rebuild one run from the domain ledgers
 ```
 
 If `python` is not on PATH, use `py -3.12`.
+
+## Onboarding from the console (v1.2)
+
+```
+python onboard.py --subject new.hire@example.test
+python onboard.py --subject new.hire@example.test --request it:create_account --request it:grant_admin_access
+```
+
+The default requests are the six supported actions. `--request DOMAIN:ACTION` (repeatable)
+replaces them. The plan and its warnings are printed, then the prompt
+`Approve this plan? [y/N]` asks the operator. Only `y` (any case) approves; any other
+answer, end of input or Ctrl-C ends with nothing approved, minted or sent.
+
+Exit codes:
+
+| Code | Meaning |
+| --- | --- |
+| 0 | every action executed (status success) |
+| 1 | partial, failed or aborted run, or a run interrupted after approval |
+| 2 | bad subject or request, or the plan was refused before the prompt |
+| 3 | not approved |
+| 4 | the domains did not start or did not give a valid declaration |
+
+Every run ends with the rebuild from the three ledgers and the run id. See
+`docs/troubleshooting.md` for the causes of each code.
 
 ## Documentation
 

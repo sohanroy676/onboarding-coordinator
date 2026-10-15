@@ -10,14 +10,14 @@ Run on Python 3.14.2 locally. The Python 3.12 check is CI on `main`.
 
 | Gate | Command | Result | Trace |
 | --- | --- | --- | --- |
-| G1 domains and registry | `python -m unittest discover -s tests -p "test_g1_*.py" -v` | OK | `traces/v0-9-g1.txt` |
-| G2 delegation | `python -m unittest discover -s tests -p "test_g2_*.py" -v` | OK | `traces/v0-9-g2.txt` |
-| G3 one approval | `python -m unittest discover -s tests -p "test_g3_*.py" -v` | OK | `traces/v0-9-g3.txt` |
-| G4 honest refusal | `python -m unittest discover -s tests -p "test_g4_*.py" -v` | OK | `traces/v0-9-g4.txt` |
-| G5 evidence and cost | `python -m unittest discover -s tests -p "test_g5_*.py" -v` | OK | `traces/v0-9-g5.txt` |
-| G6 perimeters | `python -m unittest discover -s tests -p "test_g6_*.py" -v` | OK | `traces/v0-9-g6.txt` |
-| Full suite | `python -m unittest discover -s tests -v` | Ran 279 tests, OK | `traces/v1-1-tests.txt` |
-| Syntax check | `python -m compileall -q domains coordinator ledger provision.py demo.py` | Clean | (no output) |
+| G1 domains and registry | `python -m unittest discover -s tests -p "test_g1_*.py" -v` | OK | `traces/v1-2-g1.txt` |
+| G2 delegation | `python -m unittest discover -s tests -p "test_g2_*.py" -v` | OK | `traces/v1-2-g2.txt` |
+| G3 one approval | `python -m unittest discover -s tests -p "test_g3_*.py" -v` | OK | `traces/v1-2-g3.txt` |
+| G4 honest refusal | `python -m unittest discover -s tests -p "test_g4_*.py" -v` | OK | `traces/v1-2-g4.txt` |
+| G5 evidence and cost | `python -m unittest discover -s tests -p "test_g5_*.py" -v` | OK | `traces/v1-2-g5.txt` |
+| G6 perimeters | `python -m unittest discover -s tests -p "test_g6_*.py" -v` | OK | `traces/v1-2-g6.txt` |
+| Full suite | `python -m unittest discover -s tests -v` | Ran 323 tests, OK | `traces/v1-2-tests.txt` |
+| Syntax check | `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app` | Clean | (no output) |
 
 ## Expected results
 
@@ -128,3 +128,31 @@ Stated limits that remain after these fixes: a clock rewound to a time still aft
 approval marker and every domain ledger can still replay (ADR-0004, ADR-0003); the
 counter file and the ledgers are plain local files, so they are not tamper-evident
 (ADR-0006); the hash chain cannot detect truncation from the end (ADR-0006).
+
+## v1.2 Onboarding core and CLI
+
+Run from the project root with `python onboard.py --subject <id>`. The flow is
+`app/onboarding.py`; the approval is given at the console (ADR-0009). Each row
+names the test that proves it and the saved trace. Traces were captured with
+shell redirection and the scripted answer is piped in; nothing was edited.
+
+| Requirement | Test | Trace |
+| --- | --- | --- |
+| Subject is one ASCII token, one @, at most 254 characters | `test_unit_app_onboarding.SubjectRules.test_254_characters_is_the_longest_accepted`, `test_unit_app_onboarding.SubjectRules.test_255_characters_is_refused`, `test_unit_app_onboarding.SubjectRules.test_a_space_is_refused`, `test_unit_app_onboarding.SubjectRules.test_non_ascii_is_refused`, `test_unit_app_onboarding.SubjectRules.test_two_at_signs_are_refused` | `traces/v1-2-tests.txt` |
+| Request is domain:action, domain in hr, it, facilities; action [a-z_]{1,40}; params empty | `test_unit_app_onboarding.RequestRules.test_forty_one_characters_is_refused_and_forty_is_accepted`, `test_unit_app_onboarding.RequestRules.test_digits_and_dashes_in_action_are_refused`, `test_unit_app_onboarding.RequestRules.test_an_unknown_domain_is_refused`, `test_unit_app_onboarding.RequestRules.test_a_valid_request_has_empty_params` | `traces/v1-2-tests.txt` |
+| y in any case approves; n, empty, other words, end of input and Ctrl-C do not | `test_unit_app_onboarding.ApprovalPrompt.test_y_in_any_case_approves_and_runs`, `test_unit_app_onboarding.ApprovalPrompt.test_anything_else_is_not_approved_and_sends_nothing`, `test_unit_app_onboarding.ApprovalPrompt.test_end_of_input_is_not_approved`, `test_unit_app_onboarding.ApprovalPrompt.test_ctrl_c_at_the_prompt_is_not_approved` | `traces/v1-2-onboard-declined.txt` |
+| Declined run: no POST, no approval marker, no ledger line (real domains) | `test_unit_app_live.DeclinedRun.test_declined_run_writes_no_ledger_line_and_no_marker` | `traces/v1-2-onboard-declined.txt` |
+| Approved default run: six executed, two ledger lines per domain, rebuild chains ok | `test_unit_app_live.ApprovedRun.test_approved_default_run_writes_six_ledger_lines`, `test_unit_app_live.ApprovedRun.test_the_approved_run_rebuilds_from_the_ledgers` | `traces/v1-2-onboard-approved.txt`, `traces/v1-2-reconstruct.txt` |
+| will_not request stays in the plan with a warning and is refused in IT; status partial, exit 1 | `test_unit_app_live.PartialRun.test_will_not_request_gives_partial_with_one_refusal_in_it`, `test_unit_app_onboarding.PlanContent.test_will_not_warning_is_printed_and_the_step_stays_in_the_plan` | `traces/v1-2-onboard-partial.txt` |
+| Unknown domain, unsupported action and stale declaration exit 2 before any prompt | `test_unit_app_onboarding.ExitCodes.test_unknown_domain_or_unsupported_action_exits_2_before_any_prompt`, `test_unit_app_onboarding.ExitCodes.test_stale_declaration_exits_2_before_any_prompt`, `test_unit_app_onboarding.ExitCodes.test_bad_subject_exits_2_before_any_start_or_prompt` | `traces/v1-2-tests.txt` |
+| Domains that do not start, or do not answer their declaration, exit 4 before any prompt | `test_unit_app_onboarding.ExitCodes.test_domains_that_do_not_start_exit_4_before_any_prompt`, `test_unit_app_onboarding.ExitCodes.test_a_domain_that_does_not_answer_its_declaration_exits_4` | `traces/v1-2-tests.txt` |
+| Interrupt after approval exits 1 and prints the run id to rebuild from | `test_unit_app_onboarding.ExitCodes.test_interrupt_after_approval_exits_1_and_prints_the_run_id`, `test_unit_app_onboarding.PlanContent.test_the_run_id_is_printed_before_any_domain_is_called` | `traces/v1-2-tests.txt` |
+| Default requests are the six supported actions; given requests replace them | `test_unit_app_onboarding.PlanContent.test_default_requests_are_the_six_supported_actions`, `test_unit_app_onboarding.PlanContent.test_given_requests_replace_the_defaults` | `traces/v1-2-tests.txt` |
+| app/ imports only coordinator, ledger.reconstruct and the operator modules | `test_g6_perimeters.StaticImportScan.test_project_imports_respect_the_boundaries`, `test_unit_perimeter_scan.AppImportRules.test_planted_domains_import_from_app_is_flagged`, `test_unit_perimeter_scan.AppImportRules.test_planted_ledger_internals_import_from_app_is_flagged` | `traces/v1-2-g6.txt` |
+| The six gates are unchanged (G1 15, G2 11, G3 10, G4 7, G5 7, G6 11) | `test_g1_domains_registry.py`, `test_g2_delegation.py`, `test_g3_approval.py`, `test_g4_refusal.py`, `test_g5_evidence_cost.py`, `test_g6_perimeters.py` | `traces/v1-2-g1.txt` to `traces/v1-2-g6.txt` |
+
+Stated limits for v1.2 (not proven by a gate): the console answer is the only
+human check, and the operator and coordinator share one trust domain (ADR-0009);
+the piped answer is not echoed in the saved trace; `--request` replaces the six
+defaults, so a subset run is possible but a default-plus-extra run needs every
+request listed.

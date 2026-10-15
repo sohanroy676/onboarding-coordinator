@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CHECKLIST = ROOT / "docs" / "acceptance-checklist.md"
-TEST_REF = re.compile(r"(test_g\d_\w+)\.(?:(\w+)\.)?(test_\w+)")
+TEST_REF = re.compile(r"(test_(?:g\d|unit)_\w+)\.(?:(\w+)\.)?(test_\w+)")
 TRACE_REF = re.compile(r"traces/[\w.-]+\.txt")
 
 
@@ -50,6 +50,11 @@ class AcceptanceChecklistTest(unittest.TestCase):
     def test_planted_missing_trace_is_reported(self):
         text = "see traces/v0-0-nothing.txt"
         self.assertEqual(find_missing(text), ["no trace traces/v0-0-nothing.txt"])
+
+    def test_planted_missing_unit_test_is_reported(self):
+        text = "`test_unit_app_onboarding.NoSuchClass.test_y_in_any_case_approves_and_runs`"
+        self.assertEqual(find_missing(text),
+                         ["no class test_unit_app_onboarding.NoSuchClass"])
 
     def test_planted_missing_class_is_reported(self):
         text = "`test_g6_perimeters.NoSuchClass.test_reconstruct_is_read_only`"

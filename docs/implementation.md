@@ -72,6 +72,26 @@ namespace packages, so every command runs from the project root with `python -m`
 8. **Audit.** `python -m ledger.reconstruct <run_id>` reads the three ledgers and
    checks each hash chain.
 
+## Onboarding CLI (v1.2)
+
+`app/onboarding.py` is the one onboarding flow, and `onboard.py` is a thin wrapper.
+The flow validates the subject and each `domain:action` request, starts the three
+domains through `provision.Provisioner` (demo ports, or `OC_PORT_*`), refreshes the
+registry, builds the plan, prints it with its warnings, and asks `Approve this plan? [y/N]`.
+Only `y` continues. Then it signs the plan (`Approver`), runs it (`run_plan`) with a
+`TokenMinter` that counts into `state/exchanges.log`, prints the report (the
+`demo.print_report` function, imported), rebuilds the run from the ledgers, and stops
+the domains in a `finally` block. The run id is printed before the first POST.
+
+Import boundary: `app/` may import `coordinator`, `ledger.reconstruct`, `provision`
+and `demo` (for `print_report`, `SUPPORTED_REQUESTS`). It may not import `domains` or
+`ledger.ledger`. The G6 import scan enforces this (ADR-0010 amended).
+
+Tests: `tests/test_unit_app_onboarding.py` runs the flow with a fake provisioner,
+a fake registry fetch and a fake poster, so no process starts. `tests/test_unit_app_live.py`
+runs real domain processes on port 0 with a temporary state folder and the real clock
+(the children read real time for token expiry).
+
 ## Trust boundaries
 
 - Each domain is the only verifier of its own tokens, the only enforcer of its
@@ -142,7 +162,7 @@ These are stated, not hidden. Each is also in the acceptance checklist.
 
 - Full suite: `python -m unittest discover -s tests -v`
 - One gate: `python -m unittest discover -s tests -p "test_g2_*.py" -v`
-- Syntax check: `python -m compileall -q domains coordinator ledger provision.py demo.py`
+- Syntax check: `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app`
 - Scenarios: `python demo.py`
 - Rebuild one run: `python -m ledger.reconstruct <run_id>`
 

@@ -1,7 +1,7 @@
 # ADR-0009: Approval is given by the operator at the console
 
 ## Status
-Proposed (draft for v1.2.0; accept when the v1.2.0 code lands)
+Accepted (in v1.2.0, branch feat/onboarding-core)
 
 ## Date
 2026-10-15
