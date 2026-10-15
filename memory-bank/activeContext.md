@@ -3,7 +3,7 @@
 <!-- Update this at the end of every session. This is the first thing to read when resuming. -->
 
 ## Current focus
-v0.5 Plan and approval (M4, M5, gate G3) is built on feature/v0-5-plan-approval from main. Full suite 168 tests passing on Python 3.14.2; compileall clean. Not pushed or merged; waiting for the user's go-ahead. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
+v0.5 Plan and approval (M4, M5, gate G3) is merged to main, tagged v0.5.0 and pushed to origin. Full suite 168 tests passing on Python 3.14.2; compileall clean. CI on Python 3.12 is the 3.12 check (local py -3.12 still broken).
 
 ## Recent decisions
 - v0.5: approval replay key is approval_id, not plan hash (a second run of the same plan needs a fresh approval). ADR-0004.
@@ -29,4 +29,4 @@ v0.5 Plan and approval (M4, M5, gate G3) is built on feature/v0-5-plan-approval 
 - Approval expiry uses the same clock rule as the registry: a clock moving backwards keeps an approval valid longer.
 
 ## Next step
-Review the v0.5 diff, then ask the user before pushing feature/v0-5-plan-approval or merging to main (plain-English summary first). After merge, start v0.6 Run and refusal (M6). Local py -3.12 still needs reinstalling; CI is the 3.12 check.
+Start v0.6 Run and refusal (M6) on feature/v0-6-run-refusal from main: run.py, demo.py, clean and partial runs (ROADMAP.md). Local py -3.12 still needs reinstalling; CI is the 3.12 check.
