@@ -115,8 +115,9 @@ These are stated, not hidden. Each is also in the acceptance checklist.
   from the environment, or names a domain key. It does not prove the coordinator
   cannot compute one. Standard library HMAC cannot remove this without a
   different key design (ADR-0007). Accepted as a stated limit for v1 (ADR-0008).
-- **Clock moving backwards** is treated as fresh, for registry staleness and
-  approval expiry.
+- **Clock moving backwards.** A declaration or approval stamped after the
+  current time is refused. A rewind to a time still after the approval's issue
+  time extends its life and is not detected (ADR-0004 amendment).
 - **Deleting a consumed approval marker re-opens replay.** Markers are plain
   files, not in any ledger.
 - **Hash chain cannot detect truncation from the end.** Removed last lines are

@@ -6,7 +6,7 @@ file in exclusive mode. Exactly one concurrent consume can win, and a
 replay is refused even after a restart because the marker is on disk.
 A check that fails writes no marker. Format is fixed in ADR-0004.
 
-    tag = HMAC-SHA256(approval key, canonical({approval_id, plan_hash, expires_at}))
+    tag = HMAC-SHA256(approval key, canonical({approval_id, plan_hash, issued_at, expires_at}))
     approval key = HMAC-SHA256(approval secret, b"oc-approval|")
 """
 
@@ -19,7 +19,7 @@ from coordinator.tokens import constant_time_equal, keyed_digest
 
 APPROVAL_LABEL = b"oc-approval|"
 APPROVAL_ID = re.compile(r"[0-9a-f]{32}")
-APPROVAL_FIELDS = frozenset({"approval_id", "plan_hash", "expires_at", "tag"})
+APPROVAL_FIELDS = frozenset({"approval_id", "plan_hash", "issued_at", "expires_at", "tag"})
 DEFAULT_TTL_SECONDS = 300
 
 
@@ -31,6 +31,10 @@ class ApprovalError(Exception):
 
 class ApprovalTagInvalid(ApprovalError):
     code = "invalid_approval_tag"
+
+
+class ApprovalClockRegressed(ApprovalError):
+    code = "approval_clock_regressed"
 
 
 class ApprovalExpired(ApprovalError):
@@ -56,10 +60,11 @@ def derive_approval_key(approval_secret):
     return keyed_digest(approval_secret.encode("utf-8"), APPROVAL_LABEL)
 
 
-def _tag(key, approval_id, digest, expires_at):
+def _tag(key, approval_id, digest, issued_at, expires_at):
     message = canonical_json({
         "approval_id": approval_id,
         "plan_hash": digest,
+        "issued_at": issued_at,
         "expires_at": expires_at,
     })
     return keyed_digest(key, message).hex()
@@ -79,12 +84,14 @@ class Approver:
         """Return a fresh approval for this plan; each call gets a new id."""
         digest = plan_hash(plan)
         approval_id = secrets.token_hex(16)
-        expires_at = int(self._clock()) + self._ttl
+        issued_at = int(self._clock())
+        expires_at = issued_at + self._ttl
         return {
             "approval_id": approval_id,
             "plan_hash": digest,
+            "issued_at": issued_at,
             "expires_at": expires_at,
-            "tag": _tag(self._key, approval_id, digest, expires_at),
+            "tag": _tag(self._key, approval_id, digest, issued_at, expires_at),
         }
 
 
@@ -98,8 +105,11 @@ class ApprovalGate:
 
     def verify_and_consume(self, approval, plan):
         """Raise an ApprovalError subclass, or consume the approval and return."""
-        approval_id, digest, expires_at = self._check_tag(approval)
-        if int(self._clock()) >= expires_at:
+        approval_id, digest, issued_at, expires_at = self._check_tag(approval)
+        now = int(self._clock())
+        if now < issued_at:
+            raise ApprovalClockRegressed("clock is before the approval was issued")
+        if now >= expires_at:
             raise ApprovalExpired("approval has expired")
         if plan_hash(plan) != digest:
             raise PlanChangedSinceApproval("the plan differs from the approved plan")
@@ -110,18 +120,20 @@ class ApprovalGate:
             raise ApprovalTagInvalid("approval has the wrong fields")
         approval_id = approval["approval_id"]
         digest = approval["plan_hash"]
+        issued_at = approval["issued_at"]
         expires_at = approval["expires_at"]
         tag = approval["tag"]
         if not isinstance(approval_id, str) or not APPROVAL_ID.fullmatch(approval_id):
             raise ApprovalTagInvalid("approval id is malformed")
         if not isinstance(digest, str) or not isinstance(tag, str) or not tag.isascii():
             raise ApprovalTagInvalid("approval fields have the wrong type")
-        if not isinstance(expires_at, int) or isinstance(expires_at, bool):
-            raise ApprovalTagInvalid("expiry must be an integer")
-        expected = _tag(self._key, approval_id, digest, expires_at)
+        for stamp in (issued_at, expires_at):
+            if not isinstance(stamp, int) or isinstance(stamp, bool):
+                raise ApprovalTagInvalid("issued and expiry times must be integers")
+        expected = _tag(self._key, approval_id, digest, issued_at, expires_at)
         if not constant_time_equal(expected, tag):
             raise ApprovalTagInvalid("approval tag does not verify")
-        return approval_id, digest, expires_at
+        return approval_id, digest, issued_at, expires_at
 
     def _consume(self, approval_id, digest):
         self._markers.mkdir(parents=True, exist_ok=True)

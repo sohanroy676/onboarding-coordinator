@@ -92,7 +92,9 @@ below is the project's deliverable list, supplied by the author. Status words me
 - **The coordinator can derive every domain key.** G6 shows the coordinator never
   stores, reads or names a domain key. It does not show the coordinator cannot
   compute one (`coordinator/tokens.py:88`, ADR-0007).
-- **A clock moving backwards is treated as fresh.**
+- **A clock moving backwards.** Fixed for a declaration or approval received
+  after the current time (refused). A rewind to a time still after the approval's
+  issue time extends its life; this is not detected (ADR-0004 amendment).
 - **Deleting a consumed approval marker re-opens replay.**
 - **The hash chain cannot detect truncation from the end.** The auditor prints
   this limit in every rebuild.
