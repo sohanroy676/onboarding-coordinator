@@ -1,7 +1,10 @@
 # Roadmap
 
 ## Now
-- v0.0 Setup and spikes: folder layout and README; confirm on Python 3.12/Windows that python -m works with namespace packages, that unittest discovery works with the chosen command, that exclusive-create approval markers are race-safe across 8 processes, and which environment variables child processes need.
+- Review and merge v0.1 (feature/v0-1-foundations).
+
+## Done
+- v0.0 Setup and spikes: namespace packages, unittest discovery, race-safe exclusive-create markers and child env needs confirmed.
 - v0.1 Foundations: canonical JSON and plan hash, ledger.py with hash chain, tokens.py (key derivation, mint, counter), with unit tests.
 
 ## Next
