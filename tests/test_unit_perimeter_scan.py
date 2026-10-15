@@ -101,6 +101,18 @@ class WriteSiteRules(unittest.TestCase):
     def test_method_open_without_mode_is_not_a_file_write(self):
         self.assertEqual(self.sites("opener.open(request, timeout=5)\n"), [])
 
+    def test_path_open_with_non_literal_mode_is_reported(self):
+        self.assertEqual(self.sites("p.open(m, encoding='ascii')\n"), ["open:?"])
+
+    def test_path_open_with_non_literal_keyword_mode_is_reported(self):
+        self.assertEqual(self.sites("p.open(mode=m)\n"), ["open:?"])
+
+    def test_non_literal_mode_on_read_only_opener_is_not_reported(self):
+        self.assertEqual(self.sites("opener.open(m, timeout=5)\n"), [])
+
+    def test_path_open_with_no_arguments_is_not_reported(self):
+        self.assertEqual(self.sites("p.open()\n"), [])
+
     def test_mutating_calls_are_listed(self):
         self.assertEqual(self.sites("p.mkdir(parents=True)\np.unlink()\n"),
                          ["mkdir", "unlink"])
