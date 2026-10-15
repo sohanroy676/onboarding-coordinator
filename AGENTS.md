@@ -4,9 +4,9 @@ Federated least-privilege onboarding coordinator (PS3): a coordinator plus HR, I
 
 Stack: Python 3.12+ on Windows, standard library only, HTTP+JSON on 127.0.0.1, unittest.
 
-- Run: python provision.py | python demo.py
+- Run: python provision.py | python demo.py | python onboard.py --subject <id>
 - Test: python -m unittest discover -s tests -v
-- Check: python -m compileall -q domains coordinator ledger provision.py demo.py
+- Check: python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app
 
 - Standard library only; never add a third-party package.
 - No secret or key in any file; the coordinator never holds a domain credential.

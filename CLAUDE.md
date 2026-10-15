@@ -38,9 +38,10 @@ Key invariants (breaking any of these breaks a gate):
 
 - Tests: `python -m unittest discover -s tests -v`
 - One gate: `python -m unittest discover -s tests -p "test_g2_*.py" -v`
-- Syntax check (the only "lint"): `python -m compileall -q domains coordinator ledger provision.py demo.py`
+- Syntax check (the only "lint"): `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app`
 - Start, health-check and stop domains: `python provision.py`
 - All scenarios with traces: `python demo.py`
+- Onboard one new hire (plan, console approval, run, rebuild): `python onboard.py --subject <id>`
 - Rebuild a run: `python -m ledger.reconstruct <run_id>`
 - If `python` is not on PATH, use `py -3.12`.
 

@@ -17,11 +17,12 @@
 ## Lint and format
 - No third-party linter or formatter (the project is standard-library only).
 - Style: PEP 8 by hand, 4-space indents, ASCII-only source and console output.
-- Syntax check: python -m compileall -q domains coordinator ledger provision.py demo.py
+- Syntax check: python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app
 
 ## Run commands (from project root, PowerShell or cmd)
 - Start the three domains, check health, stop them: python provision.py
 - Run every scenario and print the traces: python demo.py
+- Onboard one new hire from the console (plan, approve, run, rebuild): python onboard.py --subject <id>
 - Rebuild one run from the three ledgers: python -m ledger.reconstruct <run_id>
 
 ## Database and external services

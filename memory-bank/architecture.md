@@ -18,6 +18,8 @@ onboarding_coordinator/
   ledger/
     ledger.py             append-only JSON Lines with a hash chain
     reconstruct.py        read-only auditor: rebuilds a run by correlation ID
+  app/onboarding.py       the one onboarding flow (v1.2): validate, plan, console approval, run, rebuild
+  onboard.py              thin CLI over app/onboarding.py (v1.2)
   provision.py            operator: makes secrets in memory, starts and stops the domains
   demo.py                 runs every scenario and prints the traces
   tests/                  unit tests and the six gate tests

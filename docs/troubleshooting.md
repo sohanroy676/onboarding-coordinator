@@ -141,6 +141,46 @@ with every hash chain `ok`.
 **Fix:** delete the old runtime folder and start fresh. `state/` is runtime only
 and is not in git.
 
+## Onboarding CLI (`python onboard.py`)
+
+### Exit 2: `input error: ...`
+
+- `subject is empty`, `subject must be printable ASCII with no spaces`, `subject is longer than 254 characters`,
+  or `subject must contain exactly one @`: fix the `--subject` value. Nothing is started and no prompt is shown.
+- `request must be domain:action`, `unknown domain`, or `action must match [a-z_]{1,40}`: fix the `--request` value.
+  Domains are `hr`, `it` and `facilities`, lower case.
+
+### Exit 2: `plan refused: ...`
+
+- `<domain> does not offer <action>`: the action is not in that domain's capability declaration. Check the
+  spelling against `python -m unittest` tests or the declarations in `domains/`.
+- `declaration is N s old, TTL is 60s`: the domain's declaration is older than its TTL when the plan is built.
+  Only a clock that moved between the refresh and the plan can cause this inside one run; start again.
+- `unknown domain: <name>`: a domain name outside the three configured ones.
+
+No prompt is shown for either form of exit 2.
+
+### Exit 3: `not approved: nothing was approved, minted or sent`
+
+- The answer was not `y` (any case). `n`, an empty line, or any other word is a decline.
+- Input ended (`EOFError`), for example a piped run with no answer. The saved trace
+  `traces/v1-2-onboard-declined.txt` shows this with exit code 3.
+- Ctrl-C at the prompt is also a decline. No approval marker, no POST and no ledger line are written.
+
+### Exit 4: `domains did not start: ...`
+
+- `<domain> did not become ready: <stderr>`: a child process did not print READY. Its stderr is shown. The
+  usual cause is a port already in use. Stop the stale domain processes and try again, or set `OC_PORT_HR`,
+  `OC_PORT_IT` or `OC_PORT_FAC` to free ports.
+- `<domain>: connection refused` (or another `OSError`) from the registry: the domain started but did not answer
+  its declaration. The run stops before any prompt.
+- `<domain>: HTTP <code>` or an invalid declaration: the domain answered with something the registry refuses.
+
+### Exit 1 after approval: `interrupted after approval`
+
+- Ctrl-C after the answer `y` stops the coordinator while domains may be partly done. Rebuild the run with the
+  printed `python -m ledger.reconstruct <run id>`. Nothing is retried or rolled back.
+
 ## Traces
 
 Save a trace only from a real run, with shell redirection from the project root.

@@ -1,0 +1,16 @@
+test_expired_token_is_refused_at_expiry (test_g2_delegation.ExpiryAndReplayTests.test_expired_token_is_refused_at_expiry) ... ok
+test_replay_is_refused_before_and_after_restart (test_g2_delegation.ExpiryAndReplayTests.test_replay_is_refused_before_and_after_restart) ... ok
+test_token_is_valid_one_second_before_expiry (test_g2_delegation.ExpiryAndReplayTests.test_token_is_valid_one_second_before_expiry) ... ok
+test_approval_secret_cannot_sign_a_token (test_g2_delegation.ForgedSignatureTests.test_approval_secret_cannot_sign_a_token) ... ok
+test_edited_claims_keep_the_old_signature_and_are_refused (test_g2_delegation.ForgedSignatureTests.test_edited_claims_keep_the_old_signature_and_are_refused) ... ok
+test_exchange_secret_cannot_sign_a_token (test_g2_delegation.ForgedSignatureTests.test_exchange_secret_cannot_sign_a_token) ... ok
+test_widened_scope_with_real_signature_is_refused (test_g2_delegation.ForgedSignatureTests.test_widened_scope_with_real_signature_is_refused) ... ok
+test_missing_or_broken_tokens_are_malformed (test_g2_delegation.MalformedTokenTests.test_missing_or_broken_tokens_are_malformed) ... ok
+test_action_outside_token_scope_is_refused (test_g2_delegation.ScopeAndWillNotTests.test_action_outside_token_scope_is_refused) ... ok
+test_will_not_action_is_refused_inside_a_valid_token (test_g2_delegation.ScopeAndWillNotTests.test_will_not_action_is_refused_inside_a_valid_token) ... ok
+test_token_for_one_domain_is_refused_by_each_other_domain (test_g2_delegation.WrongDomainTests.test_token_for_one_domain_is_refused_by_each_other_domain) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 18.237s
+
+OK

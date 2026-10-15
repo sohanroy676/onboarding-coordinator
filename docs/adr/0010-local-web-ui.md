@@ -29,8 +29,10 @@ Security rules for the UI:
 - no file paths from the browser; static files come from a fixed allowlist;
 - approve is a separate action that sends the plan hash the user saw, and `run_plan` still refuses a changed plan.
 
-Boundaries: `app/` may import `coordinator` and `ledger.reconstruct`, but not
-`domains` or ledger internals. A G6 import-scan rule enforces this.
+Boundaries: `app/` may import `coordinator`, `ledger.reconstruct`, `provision` (the
+operator's Provisioner) and `demo` (for `print_report`), but not `domains` or ledger
+internals. A G6 import-scan rule enforces this. The v1.2 CLI (ADR-0009) needed the
+last two imports; this is the amendment.
 
 ## Alternatives considered
 - **A third-party web framework (Flask, FastAPI).** Simpler to write, but it breaks the standard-library rule. Rejected.
