@@ -26,7 +26,7 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - Staleness is strictly greater than TTL (age equal to TTL is fresh).
 
 ## Blockers / open questions
-- Coordinator can derive domain keys from the exchange secret (see v0.8 decisions). Needs a decision before the faculty review if the "zero domain credentials" claim is to hold in the strict sense.
+- Coordinator can derive domain keys from the exchange secret. Decided for v1 in ADR-0008: stated limit, claim narrowed to "stores and reads no domain key". Strict version needs a broker or a third-party package (future ADR).
 - Local `py -3.12` launcher is broken (python is 3.14.2); suite not yet run on 3.12 locally.
 - Hash chain cannot detect removal of the last entries; the auditor states that limit.
 - Replay protection after restart depends on an intact ledger.
@@ -36,4 +36,4 @@ v1.0 Freeze is done on feature/v1-0-freeze (not merged, not pushed): local tag v
 - ci.yml compileall now includes demo.py (v0.6 onward).
 
 ## Next step
-v1.0.0 is on origin/main (merge d706058). Branch fix/d12-secret-docs (49debff, 843435a) holds the D12 docs correction and the D2 re-run traces; it is not merged or pushed, and needs approval to merge and push. Domain-key limit stays a stated limit (ADR-0007) for the faculty review. CI on push gives the Python 3.12 check.
+Branch docs/ps3-decisions (from main b62a475) holds ADR-0008 (domain-key limit accepted for v1; D12 requirement changed to docs) and the narrowed "zero domain credentials" wording. Not pushed or merged; needs approval to push and merge. Confirm CI for b62a475 passed (it was in progress at last check). CI on push gives the Python 3.12 check.

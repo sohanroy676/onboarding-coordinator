@@ -57,8 +57,11 @@ and `memory-bank/systemPatterns.md` when planning a feature.
 ## Rules
 
 ### Security (non-negotiable)
-- No secret, key or token in any file. Secrets exist only as process environment
-  variables that `provision.py` creates in memory; nobody sets them by hand. This project
+- No secret, key or token in any file. The two coordinator secrets (`OC_EXCHANGE_SECRET`,
+  `OC_APPROVAL_SECRET`) are not environment variables: `provision.py` creates them in
+  memory in its own process, and no child process or code reads them from the
+  environment. Only each domain's derived key (`OC_DOMAIN_KEY`) is passed as an env var.
+  Nobody sets any of these by hand. This project
   does NOT use a `.env` file (it stays in `.gitignore` only as a guard), so ignore the
   generic ".env" advice in `.clinerules/01-security.md`.
 - The coordinator never holds a domain credential. Never log secrets or tokens.

@@ -50,7 +50,8 @@ runtime check diffs a snapshot of `state/` around one run.
   environment, or names `OC_DOMAIN_KEY`. It does not prove the coordinator is
   unable to compute a domain key in memory. Closing that needs a different key
   design (per-domain keys held by the domains, with the coordinator signing with
-  a key it cannot derive), and is left for a later decision.
+  a key it cannot derive), and is left for a later decision. ADR-0008 accepts
+  this as a stated limit for v1.
 - Clock moving backwards, a deleted consumed marker re-opening replay, and
   truncation from the end of a hash chain (see ADR-0004 and ADR-0006) are not
   addressed here.
