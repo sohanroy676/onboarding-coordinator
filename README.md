@@ -3,7 +3,8 @@
 A federated, least-privilege employee onboarding coordinator for problem statement PS3.
 A coordinator process plans one onboarding run across three domain agents (HR, IT and
 Facilities). Each domain checks its own tokens, enforces its own refusals and writes its
-own ledger. The coordinator holds no domain credential.
+own ledger. The coordinator stores and reads no domain key; it can derive one in memory,
+a stated limit (ADR-0008).
 
 This is an academic prototype for an Agentic AI course. It runs only on 127.0.0.1 and
 uses simulated actions. It contains no language model and no real HR, IT or Facilities
