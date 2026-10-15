@@ -1,0 +1,13 @@
+test_clean_run_executes_six_and_refuses_none (test_g4_refusal.CleanRun.test_clean_run_executes_six_and_refuses_none) ... ok
+test_unreachable_domain_is_not_executed_and_later_domains_still_run (test_g4_refusal.DomainDown.test_unreachable_domain_is_not_executed_and_later_domains_still_run) ... ok
+test_grant_admin_access_run_is_partial_six_executed_one_refused (test_g4_refusal.GrantAdminAccessRun.test_grant_admin_access_run_is_partial_six_executed_one_refused) ... ok
+test_it_ledger_records_the_refusal_and_no_execution (test_g4_refusal.GrantAdminAccessRun.test_it_ledger_records_the_refusal_and_no_execution) ... ok
+test_refused_step_stays_in_the_plan_with_a_warning (test_g4_refusal.GrantAdminAccessRun.test_refused_step_stays_in_the_plan_with_a_warning) ... ok
+test_changed_plan_aborts_before_any_token_is_minted (test_g4_refusal.RefusedApprovals.test_changed_plan_aborts_before_any_token_is_minted) ... ok
+test_replayed_approval_aborts_and_leaves_domain_ledgers_untouched (test_g4_refusal.RefusedApprovals.test_replayed_approval_aborts_and_leaves_domain_ledgers_untouched) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 13.888s
+
+OK
+gate g4 exit 0
