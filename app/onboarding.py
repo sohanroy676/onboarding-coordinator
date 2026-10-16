@@ -16,6 +16,7 @@ from app.model_planner import (
     ENV_PATH,
     GroqClient,
     ModelPlannerError,
+    build_proposal_schema,
     build_system_prompt,
     parse_proposal,
     read_key,
@@ -180,12 +181,17 @@ def _plan_approve_run(provisioner, subject, requests, ask, post, clock, run_id,
 def propose_requests(registry, client, request_text):
     """Ask the model for requests and return them as (domain, action, params).
 
-    Only the offered action names and the free text leave the machine; the
-    subject does not. A pair that parse_request rejects is a bad model reply.
+    Only the declared action names (supported and refused) and the free text
+    leave the machine; the subject does not. A pair that parse_request rejects is a bad model reply.
     Prints nothing; the console and the web UI both call it.
     """
-    offered = {domain: registry.declaration(domain).capabilities for domain in DOMAINS}
-    reply = client.propose(build_system_prompt(offered), request_text)
+    declared = {domain: registry.declaration(domain) for domain in DOMAINS}
+    offered = {domain: item.capabilities for domain, item in declared.items()}
+    refused = {domain: item.will_not for domain, item in declared.items()}
+    names = [name for group in (offered, refused) for names in group.values()
+             for name in names]
+    reply = client.propose(build_system_prompt(offered, refused), request_text,
+                           build_proposal_schema(names))
     try:
         return [parse_request(text) for text in parse_proposal(reply)]
     except InputError as exc:

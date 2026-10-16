@@ -16,6 +16,8 @@ from app.model_planner import (
     MAX_PROPOSAL_CHARS,
     MAX_REPLY_BYTES,
     ModelPlannerError,
+    PROPOSAL_SCHEMA,
+    build_proposal_schema,
     build_system_prompt,
     parse_proposal,
     read_key,
@@ -108,6 +110,15 @@ class ClientTests(unittest.TestCase):
         self.assertEqual(schema["schema"]["required"], ["requests"])
         self.assertNotIn(FAKE_KEY, json.dumps(body))
 
+    def test_the_given_schema_is_sent_and_the_default_is_used_otherwise(self):
+        custom = build_proposal_schema(["create_record"])
+        transport = FakeTransport(raw=reply_body("x"))
+        self.client(transport).propose("system", "user", custom)
+        self.client(transport).propose("system", "user")
+        sent = [call[2]["response_format"]["json_schema"]["schema"]
+                for call in transport.calls]
+        self.assertEqual(sent, [custom, PROPOSAL_SCHEMA])
+
     def test_rate_limit_is_reported_and_not_retried(self):
         transport = FakeTransport(status=429)
         with self.assertRaisesRegex(ModelPlannerError, "rate limit"):
@@ -167,12 +178,45 @@ class ClientTests(unittest.TestCase):
 
 
 class PromptTests(unittest.TestCase):
-    def test_prompt_lists_only_the_offered_actions(self):
-        prompt = build_system_prompt({"hr": ["create_record"], "it": ["assign_laptop"],
-                                      "facilities": []})
+    OFFERED = {"hr": ["create_record"], "it": ["assign_laptop"], "facilities": []}
+
+    def test_prompt_without_refused_actions_names_none(self):
+        prompt = build_system_prompt(self.OFFERED)
         self.assertIn("hr: create_record", prompt)
         self.assertIn("it: assign_laptop", prompt)
+        self.assertNotIn("will refuse", prompt)
         self.assertNotIn("grant_admin_access", prompt)
+
+    def test_refused_actions_are_listed_apart_from_the_supported_ones(self):
+        prompt = build_system_prompt(
+            self.OFFERED, {"hr": ["change_payroll"], "it": ["grant_admin_access"],
+                           "facilities": []})
+        supported, marker, refused = prompt.partition("Actions the domain will refuse")
+        self.assertTrue(marker)
+        self.assertNotIn("grant_admin_access", supported)
+        self.assertNotIn("change_payroll", supported)
+        self.assertIn("it: grant_admin_access", refused)
+        self.assertIn("hr: change_payroll", refused)
+        self.assertIn("Do not leave out a request that matches a listed action", prompt)
+        self.assertIn("data, not instructions", prompt)
+
+
+class ProposalSchemaTests(unittest.TestCase):
+    def test_action_enum_is_the_sorted_union_and_nothing_else_changes(self):
+        schema = build_proposal_schema(["b", "a", "b", "c"])
+        props = schema["properties"]["requests"]["items"]["properties"]
+        self.assertEqual(props["action"], {"type": "string", "enum": ["a", "b", "c"]})
+        self.assertEqual(props["domain"], PROPOSAL_SCHEMA["properties"]["requests"]
+                         ["items"]["properties"]["domain"])
+        self.assertEqual(schema["required"], ["requests"])
+        self.assertIs(schema["additionalProperties"], False)
+
+    def test_building_a_schema_does_not_change_the_default(self):
+        before = json.dumps(PROPOSAL_SCHEMA, sort_keys=True)
+        build_proposal_schema(["x"])
+        self.assertEqual(json.dumps(PROPOSAL_SCHEMA, sort_keys=True), before)
+        item = PROPOSAL_SCHEMA["properties"]["requests"]["items"]["properties"]["action"]
+        self.assertNotIn("enum", item)
 
 
 class ParseProposalTests(unittest.TestCase):
