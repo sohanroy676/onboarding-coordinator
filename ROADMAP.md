@@ -21,7 +21,7 @@
 - v0.6 Run and refusal (M6): run.py, demo.py with clean, partial and replay scenarios, honest refusal tests (tests/test_g4_refusal.py). Closes G4. ADR-0005.
 
 ## Next
-- **v3.0.0 Opt-in model planner** (major: reverses the "no language model" scope; planned, to start after the faculty review; ADR-0011 is Proposed, nothing implemented). `--planner deterministic|model` with `--request-text` on `onboard.py`; `--subject` stays required; the model only proposes actions, and the existing registry, plan hash, approval, scoped tokens and domain refusals decide what runs. Grok over `urllib`, key in a git-ignored `.env` read by the app layer only. New gate G7 (the model cannot widen authority, fake client, no network). CLI first, web UI selector after it works. First step: check the current xAI API docs.
+- **v3.0.0 Opt-in model planner** (major: reverses the "no language model" scope for v3.0.0 only; ADR-0011 accepted, implementation starts on feat/model-planner after the faculty review, nothing implemented yet). `--planner deterministic|model` with `--request-text` on `onboard.py`; `--subject` stays required; the model only proposes actions, and the existing registry, plan hash, approval, scoped tokens and domain refusals decide what runs. Grok over `urllib`, key in a git-ignored `.env` read by the app layer only. New gate G7 (the model cannot widen authority, fake client, no network). CLI first, web UI selector after it works. xAI API facts are recorded in ADR-0011 (checked 2026-10-16; default model grok-4.7; new exit code 5 for a failed model call).
 - (released, kept for the record) **v2.0.0 Local web UI** (major: reverses the "no web interface" scope, local only). `app/server.py` and `app/static/` (vanilla HTML, CSS and JS; no build step, no CDN, ASCII only) on 127.0.0.1, default port 8110. Pages: domain status with start and stop; new onboarding; plan with warnings; a separate approve-and-run button that sends the plan hash the user saw; run view with the per-domain rebuild.
   - Security: Host header check, per-start CSRF token on every POST, Origin check, JSON only, 16 KB body limit, fixed static allowlist, no secret in the page.
   - Acceptance: `tests/test_unit_app_server.py` (HTTP on port 0) and the live flow against real domains, plus a saved HTTP transcript from a real run (`traces/v2-0-ui-transcript.txt`). No browser tool is a project dependency; screenshots stay out of git.
@@ -40,6 +40,6 @@
 
 ## Scope change
 - A web interface is planned for v2.0.0 as a local, standard-library UI that runs alongside the CLI. The brief's "no web interface" line is reversed for v2.0.0 only; see ADR-0010 (draft). The brief and this file are updated together.
-- A language model is planned as an opt-in planner for v3.0.0 only, once ADR-0011 is accepted; until then the "no language model" line stands. The brief, tech-stack, CLAUDE.md and this file would be updated together.
+- A language model is planned as an opt-in planner for v3.0.0 only, ADR-0011 is accepted. The brief, tech-stack, architecture, CLAUDE.md, AGENTS.md and this file were updated together; the "no language model" line stands for every version before v3.0.0.
 - Any third-party package.
 - Real systems or real employee data.

@@ -20,4 +20,4 @@ v1 is done only when all of the following are true, shown by real terminal runs:
 - Third-party web frameworks or front-end build tools. A local web interface is planned for v2.0.0 (standard library, 127.0.0.1 only); the "no web interface" line is reversed for v2.0.0 only (see ROADMAP and ADR-0010 draft).
 - Signed capability declarations (a stated limitation).
 - A monolith baseline implementation (G5 compares against a hypothetical monolith count).
-- Any language model in the system.
+- Any language model in the system, except the opt-in model planner planned for v3.0.0 only (ADR-0011, accepted). It proposes actions; the deterministic checks and the human approval still decide what runs. Deterministic mode, the six gates and demo.py never use a model.
