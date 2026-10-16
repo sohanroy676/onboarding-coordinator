@@ -199,7 +199,7 @@ Content-Length: 146
 
 --> HTTP 200
 {
-  "expires_at": 1792165130.5518632,
+  "expires_at": 1792167426.5473413,
   "plan": {
     "steps": [
       {
@@ -247,7 +247,7 @@ Content-Length: 2
 --> HTTP 200
 {
   "abort_code": null,
-  "exchange_count": 34,
+  "exchange_count": 39,
   "rows": [
     {
       "action": "create_record",
@@ -278,12 +278,12 @@ Content-Length: 2
       "reason": null
     }
   ],
-  "run_id": "ab07291f6fba618b",
+  "run_id": "3dd2a8eae9c77b58",
   "status": "success"
 }
 
 === 10. per-domain rebuild of the run ===
-GET /api/runs/ab07291f6fba618b HTTP/1.1
+GET /api/runs/3dd2a8eae9c77b58 HTTP/1.1
 Host: 127.0.0.1:8110
 
 --> HTTP 200
@@ -327,7 +327,7 @@ Host: 127.0.0.1:8110
   ],
   "report": {
     "abort_code": null,
-    "exchange_count": 34,
+    "exchange_count": 39,
     "rows": [
       {
         "action": "create_record",
@@ -358,10 +358,85 @@ Host: 127.0.0.1:8110
         "reason": null
       }
     ],
-    "run_id": "ab07291f6fba618b",
+    "run_id": "3dd2a8eae9c77b58",
     "status": "success"
   },
-  "run_id": "ab07291f6fba618b"
+  "run_id": "3dd2a8eae9c77b58"
+}
+
+=== 11. make a plan from a request for admin access (one Groq call) ===
+POST /api/plans HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 138
+
+{
+  "planner": "model",
+  "request_text": "New engineer needs a laptop and admin access on their machine.",
+  "subject": "new.hire@example.test"
+}
+
+--> HTTP 200
+{
+  "expires_at": 1792167427.1417398,
+  "plan": {
+    "steps": [
+      {
+        "action": "assign_laptop",
+        "classification": "supported",
+        "domain": "it",
+        "params": {}
+      },
+      {
+        "action": "grant_admin_access",
+        "classification": "will_not",
+        "domain": "it",
+        "params": {}
+      }
+    ],
+    "subject": "new.hire@example.test"
+  },
+  "plan_hash": "13cd4c7284e8846b3b61e12aad8276884b414cf8d40d8eca21ac078ff96886a3",
+  "planner": "model (qwen/qwen3.8-27b)",
+  "warnings": [
+    "it: grant_admin_access is on the domain's will_not list; the domain will refuse it, and the plan keeps it"
+  ]
+}
+
+=== 12. approve and run it: the domain refuses what it will not do ===
+POST /api/plans/13cd4c7284e8846b3b61e12aad8276884b414cf8d40d8eca21ac078ff96886a3/approve HTTP/1.1
+Host: 127.0.0.1:8110
+Origin: http://127.0.0.1:8110
+X-CSRF-Token: <csrf-token>
+Content-Type: application/json
+Content-Length: 2
+
+{}
+
+--> HTTP 200
+{
+  "abort_code": null,
+  "exchange_count": 40,
+  "rows": [
+    {
+      "action": "assign_laptop",
+      "classification": "supported",
+      "domain": "it",
+      "outcome": "executed",
+      "reason": null
+    },
+    {
+      "action": "grant_admin_access",
+      "classification": "will_not",
+      "domain": "it",
+      "outcome": "refused",
+      "reason": "will_not"
+    }
+  ],
+  "run_id": "318664ea5debb734",
+  "status": "partial"
 }
 
 # all domains stopped

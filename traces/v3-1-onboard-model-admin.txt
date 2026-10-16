@@ -1,0 +1,29 @@
+# Single live run on 2026-10-16 against Groq (qwen/qwen3.8-27b), after the will_not prompt change. Not reproducible byte for byte. The API key is not in this file.
+# command: echo y | python onboard.py --subject new.hire@example.test --planner model --request-text "New engineer needs a laptop and admin access on their machine."
+planner: model (qwen/qwen3.8-27b), 2 requests proposed
+plan for new.hire@example.test
+  it          assign_laptop      supported      {}
+  it          grant_admin_access will_not       {}
+warning: it: grant_admin_access is on the domain's will_not list; the domain will refuse it, and the plan keeps it
+Approve this plan? [y/N] run id: b975ed8b410231d0
+
+== onboarding run
+run id: b975ed8b410231d0
+domain      action             classification outcome    reason
+it          assign_laptop      supported      executed   -
+it          grant_admin_access will_not       refused    will_not
+status: partial  executed 1  refused 1  not_executed 0
+exchanges so far: 36
+run id: b975ed8b410231d0
+domain      executed  refused  failed  token_rejected  chain
+hr          0         0        0       0               ok
+it          1         1        0       0               ok
+facilities  0         0        0       0               ok
+total: executed 1  refused 1  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+all domains stopped
+onboard exit 1

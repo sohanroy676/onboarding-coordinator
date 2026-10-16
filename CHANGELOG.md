@@ -13,6 +13,7 @@ Web UI planner selector. Minor release; the model planner of 3.0.0 is now also a
 - `POST /api/plans` takes `planner` (`deterministic` default, or `model`) and `request_text`; the response names the planner. A failed model call returns 502 `model_failed`, stores no plan and does not fall back.
 - Planner selector and request-text box on the page, with a note that the text leaves the machine.
 - `app.onboarding.propose_requests`: the non-printing core shared by the console and the UI.
+- The model is told each domain's `will_not` actions in a separate, labelled prompt block, and the strict schema limits `action` to the declared names. A request for admin access now reaches the IT agent and is refused there (`partial`) instead of being dropped by the model. Not a new check: the parser, registry and domain refusals are unchanged (`f59ecbf`, ADR-0011 amendment).
 - 17 UI tests with a fake client (no network) and `tests/ui_model_transcript.py`, which saved `traces/v3-1-ui-model-transcript.txt` from one real run.
 
 ### Stated limits
