@@ -92,6 +92,23 @@ and there is no fallback. The response names the planner that produced the plan.
 Evidence: `tests/test_unit_app_server.py` (fake client, no network) and one real run in
 `traces/v3-1-ui-model-transcript.txt`.
 
+## Amendment (v3.1.0): the model is told which actions a domain refuses
+The first prompt listed only the supported actions. A request such as "give them admin
+access" was then either dropped by the model (a refusal nobody sees, against the rule that
+the domain is the only authority for its refusals) or turned into an invented name that
+ended as `plan_refused`. The prompt now also lists each domain's `will_not` actions in a
+separate block, labelled "the domain will refuse these; include one only if the text asks
+for it". The strict schema sent with each call limits `action` to the declared names
+(supported and refused) with a per-call enum. Neither is a check: the parser and the
+registry still treat the reply as untrusted, a name outside the enum or a wrong
+domain/action pair is still refused at planning, and a refused action stays in the plan
+with a warning and is refused by the domain. The names sent are the ones in each domain's
+public `/capabilities` declaration. Evidence: `tests/test_unit_model_planner.py`,
+`tests/test_unit_app_model.py`, and the real runs `traces/v3-1-onboard-model-admin.txt`
+and `traces/v3-1-ui-model-transcript.txt` (steps 11 and 12: the model proposed
+`it:grant_admin_access`, the plan carried a warning, the IT agent refused it, status
+`partial`). Live output varies, so these are single runs.
+
 ## Alternatives considered
 - **A model inside each domain agent.** More agentic, but the model would sit next to the
   authority that enforces refusals. Deferred to a later ADR, for one domain, behind the

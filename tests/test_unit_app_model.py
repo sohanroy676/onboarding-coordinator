@@ -35,9 +35,11 @@ class FakeClient:
         self.reply = reply
         self.error = error
         self.calls = []
+        self.schemas = []
 
-    def propose(self, system_prompt, user_text):
+    def propose(self, system_prompt, user_text, schema=None):
         self.calls.append((system_prompt, user_text))
+        self.schemas.append(schema)
         if self.error:
             raise self.error
         return self.reply
@@ -77,7 +79,26 @@ class ModelFlow(OnboardingCase):
         self.assertEqual(user_text, TEXT)
         self.assertNotIn(SUBJECT, system_prompt + user_text)
         self.assertIn("it: assign_laptop, create_account", system_prompt)
-        self.assertNotIn("grant_admin_access", system_prompt)
+        supported, _marker, refused = system_prompt.partition(
+            "Actions the domain will refuse")
+        self.assertNotIn("grant_admin_access", supported)
+        self.assertIn("it: grant_admin_access", refused)
+
+    def test_the_model_is_sent_every_declared_action_as_the_allowed_enum(self):
+        client = FakeClient(proposal(("it", "assign_laptop")))
+        self.run_model(client)
+        schema = client.schemas[0]
+        action = schema["properties"]["requests"]["items"]["properties"]["action"]
+        self.assertEqual(action["enum"], sorted([
+            "create_record", "enroll_benefits", "create_account", "assign_laptop",
+            "grant_admin_access", "issue_badge", "assign_desk"]))
+        self.assertTrue(schema["additionalProperties"] is False)
+
+    def test_a_refused_action_proposed_by_the_model_stays_in_the_plan(self):
+        client = FakeClient(proposal(("it", "assign_laptop"), ("it", "grant_admin_access")))
+        _code, out = self.run_model(client)
+        self.assertIn("it          grant_admin_access will_not", out)
+        self.assertIn("grant_admin_access is on the domain's will_not list", out)
 
     def test_declined_model_plan_sends_nothing(self):
         client = FakeClient(proposal(("it", "assign_laptop")))

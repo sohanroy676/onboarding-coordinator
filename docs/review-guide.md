@@ -43,6 +43,11 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
    with nothing minted or sent; show the saved runs instead
    (`traces/v3-0-onboard-model-approved.txt`, `traces/v3-0-onboard-model-injection.txt`,
    `traces/v3-0-onboard-model-no-key.txt`).
+   To show a refusal with the model, use the text "New engineer needs a laptop and admin
+   access on their machine." The model usually proposes `it:grant_admin_access`; the plan
+   keeps it with a warning and the IT agent refuses it (`partial`, executed 1, refused 1;
+   `traces/v3-1-onboard-model-admin.txt`). The model's choice varies, so if it leaves the
+   step out, say so and show the deterministic run in step 2 instead.
 7. **Gate G7 live** (1 min). `python -m unittest discover -s tests -p "test_g7_*.py" -v`
    (8 tests, fake model client, no network: hostile model output cannot widen authority;
    `traces/v3-0-g7.txt`).
@@ -89,6 +94,8 @@ anyone with write access can add `token_rejected` lines. The auditor prints both
 
 **What does the model decide? (v3.0.0)**
 Only the list of (domain, action) requests, and only when `--planner model` is chosen.
+It is told the actions each domain supports and the ones a domain refuses, so a request
+for a refused action is proposed and refused by the domain in the open, not dropped.
 Its output is untrusted: it is parsed strictly, then goes through the same registry, plan
 hash, human approval, scoped tokens and domain refusals as any other plan. A hostile
 proposal (`grant_admin_access`, an unknown action, extra fields) is refused at planning or

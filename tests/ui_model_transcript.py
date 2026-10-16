@@ -23,6 +23,7 @@ from tests.ui_transcript import REDACTED, SUBJECT, UI_PORT, Recorder
 ROOT = Path(__file__).resolve().parent.parent
 TRACE = ROOT / "traces" / "v3-1-ui-model-transcript.txt"
 REQUEST_TEXT = "New engineer. Needs an HR record, a laptop, an IT account and a badge."
+ADMIN_TEXT = "New engineer needs a laptop and admin access on their machine."
 HEADER = (
     "# Single live run against Groq through the web UI. Not reproducible byte for byte.",
     "# The API key is not in this file; the browser never receives it.",
@@ -55,6 +56,14 @@ def run_steps(rec):
     if run is not None and "run_id" in run:
         rec.exchange("per-domain rebuild of the run", "GET",
                      "/api/runs/%s" % run["run_id"], 200)
+    admin = rec.exchange("make a plan from a request for admin access (one Groq call)",
+                         "POST", "/api/plans", 200,
+                         {"subject": SUBJECT, "planner": "model",
+                          "request_text": ADMIN_TEXT})
+    if admin is None or "plan_hash" not in admin:
+        return
+    rec.exchange("approve and run it: the domain refuses what it will not do", "POST",
+                 "/api/plans/%s/approve" % admin["plan_hash"], 200, {})
 
 
 def main():

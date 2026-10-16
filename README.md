@@ -91,7 +91,7 @@ On the page:
    `domain:action` per line. The default requests are the six supported actions.
    Optional (v3.1.0): set **Planner** to `model`, enter free text, and the model proposes
    the requests instead. It needs `GROQ_API_KEY` in the git-ignored `.env` (see
-   `.env.example`), sends only the text and the offered action names to Groq, and the
+   `.env.example`), sends only the text and the declared action names (including the ones a domain refuses) to Groq, and the
    key never reaches the browser. If the model call fails you get an error and no plan;
    there is no fallback. Use synthetic data only.
 3. **Make plan** shows the steps and any warnings, the planner that produced the plan,

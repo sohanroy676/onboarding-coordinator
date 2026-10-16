@@ -87,9 +87,11 @@ class FakeModel:
         self.reply = reply
         self.error = error
         self.calls = []
+        self.schemas = []
 
-    def propose(self, system_prompt, user_text):
+    def propose(self, system_prompt, user_text, schema=None):
         self.calls.append((system_prompt, user_text))
+        self.schemas.append(schema)
         if self.error:
             raise self.error
         return self.reply
