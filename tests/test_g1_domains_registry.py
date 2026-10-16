@@ -136,6 +136,17 @@ class DomainsDiscoveryTests(unittest.TestCase):
         self.registry.refresh("hr")
         self.assertTrue(self.registry.supports("hr", "create_record"))
 
+    def test_rubric_figures_declaration_0_1s_old_with_max_0_01s_is_refused(self):
+        registry = Registry(self.ports, self.clock, ttl_seconds=0.01)
+        registry.refresh_all()
+        self.clock.advance(0.1)
+        with self.assertRaises(DeclarationStale) as raised:
+            registry.supports("hr", "create_record")
+        self.assertIn("0.1s old", str(raised.exception))
+        self.assertIn("TTL is 0.01s", str(raised.exception))
+        with self.assertRaises(KeyError):
+            registry.supports("payroll", "create_record")
+
     def test_exact_ttl_age_is_fresh_and_one_more_second_is_stale(self):
         self.clock.advance(TTL)
         self.assertTrue(self.registry.supports("it", "assign_laptop"))
