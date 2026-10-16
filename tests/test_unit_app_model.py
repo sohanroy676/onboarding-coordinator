@@ -48,7 +48,7 @@ class RequestTextRules(unittest.TestCase):
         self.assertEqual(validate_request_text(TEXT), TEXT)
 
     def test_bad_text_is_refused(self):
-        for bad in ("", "   ", None, "a" * 1001, "line one\nline two", "café"):
+        for bad in ("", "   ", None, "a" * 1001, "line one\nline two", "caf" + chr(233)):
             with self.subTest(bad=bad), self.assertRaises(InputError):
                 validate_request_text(bad)
 

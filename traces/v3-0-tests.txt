@@ -282,10 +282,13 @@ test_reordered_lines_detected (test_unit_ledger.LedgerTests.test_reordered_lines
 test_tampered_data_detected_at_that_entry (test_unit_ledger.LedgerTests.test_tampered_data_detected_at_that_entry) ... ok
 test_truncated_last_line_is_reported_not_ignored (test_unit_ledger.LedgerTests.test_truncated_last_line_is_reported_not_ignored) ... ok
 test_unserialisable_data_raises_and_writes_nothing (test_unit_ledger.LedgerTests.test_unserialisable_data_raises_and_writes_nothing) ... ok
+test_error_detail_handles_nested_and_missing_text (test_unit_model_planner.ClientTests.test_error_detail_handles_nested_and_missing_text) ... ok
+test_error_text_from_xai_is_included_and_made_safe (test_unit_model_planner.ClientTests.test_error_text_from_xai_is_included_and_made_safe) ... ok
 test_no_key_is_refused (test_unit_model_planner.ClientTests.test_no_key_is_refused) ... ok
 test_odd_reply_shapes_are_reported (test_unit_model_planner.ClientTests.test_odd_reply_shapes_are_reported) ... ok
 test_other_statuses_and_transport_errors_are_reported (test_unit_model_planner.ClientTests.test_other_statuses_and_transport_errors_are_reported) ... ok
 test_rate_limit_is_reported_and_not_retried (test_unit_model_planner.ClientTests.test_rate_limit_is_reported_and_not_retried) ... ok
+test_rate_limit_message_also_carries_xai_text (test_unit_model_planner.ClientTests.test_rate_limit_message_also_carries_xai_text) ... ok
 test_request_shape (test_unit_model_planner.ClientTests.test_request_shape) ... ok
 test_bad_shapes_are_refused (test_unit_model_planner.ParseProposalTests.test_bad_shapes_are_refused) ... ok
 test_oversized_and_non_string_input_is_refused (test_unit_model_planner.ParseProposalTests.test_oversized_and_non_string_input_is_refused) ... ok
@@ -443,7 +446,7 @@ test_failed_write_mints_no_token_and_does_not_count (test_unit_tokens.Persistent
 test_without_a_path_nothing_is_written (test_unit_tokens.PersistentCounterTests.test_without_a_path_nothing_is_written) ... ok
 
 ----------------------------------------------------------------------
-Ran 443 tests in 180.371s
+Ran 446 tests in 174.391s
 
 OK
 suite exit 0

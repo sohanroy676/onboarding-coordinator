@@ -77,7 +77,7 @@ class ReadKeyTests(unittest.TestCase):
 
     def test_non_ascii_and_oversized_files_are_refused(self):
         with self.assertRaisesRegex(ModelPlannerError, "ASCII"):
-            self.read("XAI_API_KEY=café\n".encode("utf-8"))
+            self.read(("XAI_API_KEY=caf" + chr(233) + "\n").encode("utf-8"))
         with self.assertRaisesRegex(ModelPlannerError, "larger than"):
             self.read("# " + "x" * 5000 + "\n")
 
@@ -124,6 +124,35 @@ class ClientTests(unittest.TestCase):
                     self.client(transport).propose("s", "u")
                 self.assertNotIn(FAKE_KEY, str(ctx.exception))
                 self.assertEqual(len(transport.calls), 1)
+
+    def test_error_text_from_xai_is_included_and_made_safe(self):
+        body = json.dumps({"code": "permission-denied",
+                           "error": "no credits yet " + FAKE_KEY + " " + chr(233) + " " + "z" * 500})
+        with self.assertRaises(ModelPlannerError) as ctx:
+            self.client(FakeTransport(status=403, raw=body.encode("utf-8"))).propose("s", "u")
+        message = str(ctx.exception)
+        self.assertIn("HTTP 403: no credits yet <key>", message)
+        self.assertNotIn(FAKE_KEY, message)
+        self.assertTrue(message.isascii())
+        self.assertLess(len(message), 260)
+
+    def test_error_detail_handles_nested_and_missing_text(self):
+        cases = {
+            "nested": (json.dumps({"error": {"message": "bad model"}}).encode(), ": bad model"),
+            "not json": (b"<html>denied</html>", ""),
+            "no error field": (b'{"code": 7}', ""),
+            "error not text": (b'{"error": 5}', ""),
+            "not an object": (b"[1]", ""),
+        }
+        for name, (raw, tail) in cases.items():
+            with self.subTest(name), self.assertRaises(ModelPlannerError) as ctx:
+                self.client(FakeTransport(status=400, raw=raw)).propose("s", "u")
+            self.assertEqual(str(ctx.exception), "model call failed: HTTP 400" + tail)
+
+    def test_rate_limit_message_also_carries_xai_text(self):
+        body = json.dumps({"error": "slow down"}).encode("utf-8")
+        with self.assertRaisesRegex(ModelPlannerError, r"HTTP 429\): slow down"):
+            self.client(FakeTransport(status=429, raw=body)).propose("s", "u")
 
     def test_odd_reply_shapes_are_reported(self):
         for raw in (b"not json", b"{}", b'{"choices": []}',

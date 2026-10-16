@@ -237,7 +237,7 @@ are separate, single, non-reproducible runs (see the note at the end of this sec
 | G6: a key-shaped value is flagged everywhere except the exact path `.env`; only `app/` and `onboard.py` name the key or import the planner | `test_g6_perimeters.ModelKeyPerimeter` | `traces/v3-0-g6.txt` |
 | G6: the key in the parent environment never reaches a child | `test_unit_provision.ChildEnvTests.test_model_key_in_the_parent_environment_never_reaches_a_child` | `traces/v3-0-g6.txt` |
 | Gates after v3.0: G1 16, G2 11, G3 10, G4 7, G5 7, G6 14, G7 8 | `test_g1_domains_registry.py` to `test_g7_model_authority.py` | `traces/v3-0-g1.txt` to `traces/v3-0-g7.txt` |
-| Full suite after v3.0: Ran 443 tests, OK; syntax check clean | `python -m unittest discover -s tests -v` | `traces/v3-0-tests.txt` |
+| Full suite after v3.0: Ran 446 tests, OK; syntax check clean | `python -m unittest discover -s tests -v` | `traces/v3-0-tests.txt` |
 | Demo unchanged: success 6/0, partial 6/1, aborted replay, multiple 3.0 from 15 and 5 | `python demo.py` | `traces/v3-0-demo.txt` |
 
 Stated limits for v3.0: a model can propose a plan that is valid but wrong for the new

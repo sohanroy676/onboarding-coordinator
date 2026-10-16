@@ -22,6 +22,7 @@ MAX_REPLY_BYTES = 65536
 MAX_PROPOSAL_CHARS = 4096
 MAX_REQUESTS = 12
 MAX_ENV_BYTES = 4096
+MAX_DETAIL_CHARS = 200
 DOMAIN_NAMES = ("hr", "it", "facilities")
 
 PROPOSAL_SCHEMA = {
@@ -92,8 +93,10 @@ def https_post(url, headers, body, timeout):
         with opener.open(request, timeout=timeout) as response:
             return response.status, response.read(MAX_REPLY_BYTES + 1)
     except urllib.error.HTTPError as exc:
-        exc.close()
-        return exc.code, b""
+        try:
+            return exc.code, exc.read(MAX_REPLY_BYTES + 1)
+        finally:
+            exc.close()
 
 
 class GrokClient:
@@ -129,9 +132,11 @@ class GrokClient:
         except (OSError, ValueError) as exc:
             raise ModelPlannerError("model call failed: %s" % type(exc).__name__) from None
         if status == 429:
-            raise ModelPlannerError("model call refused: rate limit exceeded (HTTP 429)")
+            raise ModelPlannerError("model call refused: rate limit exceeded (HTTP 429)"
+                                    + self._detail(raw))
         if status != 200:
-            raise ModelPlannerError("model call failed: HTTP %d" % status)
+            raise ModelPlannerError("model call failed: HTTP %d" % status
+                                    + self._detail(raw))
         if len(raw) > MAX_REPLY_BYTES:
             raise ModelPlannerError("model reply is larger than %d bytes" % MAX_REPLY_BYTES)
         try:
@@ -141,6 +146,25 @@ class GrokClient:
         if not isinstance(content, str):
             raise ModelPlannerError("model reply has an unexpected shape")
         return content
+
+    def _detail(self, raw):
+        """Return ": <xAI error text>" from an error body, or "" if there is none.
+
+        The text is cut to 200 printable ASCII characters and the key is
+        redacted, so the message is safe to print.
+        """
+        try:
+            body = json.loads(raw.decode("utf-8"))
+        except ValueError:
+            return ""
+        text = body.get("error") if isinstance(body, dict) else None
+        if isinstance(text, dict):
+            text = text.get("message")
+        if not isinstance(text, str):
+            return ""
+        text = text.replace(self._key, "<key>")
+        text = "".join(ch if " " <= ch <= "~" else "?" for ch in text)
+        return ": " + text[:MAX_DETAIL_CHARS].strip()
 
 
 def build_system_prompt(offered):

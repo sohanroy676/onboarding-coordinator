@@ -181,8 +181,10 @@ No prompt is shown for either form of exit 2.
 - `no .env file; copy .env.example to .env and set XAI_API_KEY`: `--planner model` needs a `.env` file
   in the project root with `XAI_API_KEY=<your key>`. The file is git-ignored; never commit it. The saved
   trace `traces/v3-0-onboard-model-no-key.txt` shows this with exit code 5. No domain was started.
-- `rate limit exceeded (HTTP 429)`, `HTTP <code>`, or `model call failed: <ErrorName>`: the call was
-  refused or did not complete. Nothing is retried and nothing falls back to the deterministic planner.
+- `rate limit exceeded (HTTP 429)`, `HTTP <code>: <xAI text>`, or `model call failed: <ErrorName>`: the call was
+  refused or did not complete. The xAI error text is shown (cut to 200 characters, key redacted); for example
+  `HTTP 403: Your newly created team doesn't have any credits or licenses yet` means the xAI team needs credits,
+  and `HTTP 400: Incorrect API key provided` means the key is not an xAI key (an xAI key starts with `xai-`). Nothing is retried and nothing falls back to the deterministic planner.
   Run again later, or choose `--planner deterministic` yourself.
 - `model proposal ...` or `model proposed an unusable request`: the reply did not match the strict
   shape. Nothing was approved, minted or sent. Rephrase the request text and run again.
