@@ -11,7 +11,7 @@ test_will_not_action_is_refused_inside_a_valid_token (test_g2_delegation.ScopeAn
 test_token_for_one_domain_is_refused_by_each_other_domain (test_g2_delegation.WrongDomainTests.test_token_for_one_domain_is_refused_by_each_other_domain) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 18.293s
+Ran 11 tests in 18.079s
 
 OK
 gate g2 exit 0

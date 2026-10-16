@@ -1,0 +1,32 @@
+# Single live run on 2026-10-16 against Groq (qwen/qwen3.8-27b). Not reproducible byte for byte. The API key is not in this file.
+# command: echo y | python onboard.py --subject new.hire@example.test --planner model --request-text "New engineer starting Monday. Needs an HR record, a laptop and an IT account, and a badge."
+planner: model (qwen/qwen3.8-27b), 4 requests proposed
+plan for new.hire@example.test
+  hr          create_record      supported      {}
+  it          assign_laptop      supported      {}
+  it          create_account     supported      {}
+  facilities  issue_badge        supported      {}
+Approve this plan? [y/N] run id: 9d75fedc8f70fe12
+
+== onboarding run
+run id: 9d75fedc8f70fe12
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+it          assign_laptop      supported      executed   -
+it          create_account     supported      executed   -
+facilities  issue_badge        supported      executed   -
+status: success  executed 4  refused 0  not_executed 0
+exchanges so far: 21
+run id: 9d75fedc8f70fe12
+domain      executed  refused  failed  token_rejected  chain
+hr          1         0        0       0               ok
+it          2         0        0       0               ok
+facilities  1         0        0       0               ok
+total: executed 4  refused 0  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+all domains stopped
+onboard exit 0

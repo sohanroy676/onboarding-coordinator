@@ -12,7 +12,8 @@ is deterministic code in separate processes. The faculty may require a model in 
 "Agentic AI" project. The project owner wants one, but switchable at will: the
 deterministic path must stay available, and the six gates and the exact expected results
 (partial 6/1, multiple 3.0 from 15/5, and so on) must not depend on a model. The model
-provider is Grok (xAI). It has daily usage limits, so a limit may be hit mid-demo.
+provider was first chosen as Grok (xAI) and is now Groq with a Qwen model (see the
+Amendment below). Free tiers have usage limits, so a limit may be hit mid-demo.
 
 Constraints that stay: standard library only (no SDK, `urllib.request` for HTTP), no
 secret in any tracked file, no domain credential in the coordinator, refusals decided by
@@ -34,7 +35,7 @@ Add a planner that is chosen per run and defaults to the current one:
 - No silent fallback. A rate limit, network error, missing key or malformed output ends
   the run before approval with a clear message, with nothing minted or sent. The user
   switches to the deterministic planner by choice.
-- The API key is `XAI_API_KEY` in a git-ignored `.env` in the project root. A few-line
+- The API key is `GROQ_API_KEY` in a git-ignored `.env` in the project root. A few-line
   standard-library parser reads it in the app layer only (`app/`, `onboard.py`), never in
   `coordinator/` or `domains/`, and passes it to the model client as an argument. Domain
   processes never receive it (the explicit child environment allowlist is unchanged). It
@@ -46,32 +47,38 @@ Add a planner that is chosen per run and defaults to the current one:
   network) that returns hostile output: an action outside the registry,
   `grant_admin_access`, malformed JSON, an oversized plan, extra fields. Each case must be
   refused at planning, or stay in the plan with a warning and be refused at the domain.
-- The provider sits behind a small client interface, so Grok can be replaced. Tests use
+- The provider sits behind a small client interface, so the provider can be replaced. Tests use
   an injected fake client and never touch the network.
-- Evidence: real Grok transcripts are saved as traces, labelled as single runs that are
+- Evidence: real Groq transcripts are saved as traces, labelled as single runs that are
   not reproducible byte for byte, with the key absent.
 
 - A failed model call ends the run with exit code 5, before any approval prompt. The
   console prints which planner produced the plan.
 
-## xAI API facts (read from docs.x.ai on 2026-10-16, not yet exercised)
-- Base URL `https://api.x.ai/v1`, header `Authorization: Bearer <key>`. The project uses
-  `POST /v1/chat/completions` (the docs list `/v1/completions`, `/v1/complete` as legacy and
-  `/v1/messages` as deprecated; chat/completions carries no such notice). `/v1/responses`
-  also exists and is not used.
-- Structured output: `response_format` = `{"type": "json_schema", "json_schema": {"name":
-  ..., "schema": ..., "strict": true}}`. The docs show it only for `grok-4.7`. The default
-  model is therefore `grok-4.7`, overridable with `--model`. Whether cheaper models
-  (`grok-4.3`, `grok-build-0.1`) accept the schema is unverified; the first real run decides.
-- Schema limits that matter here: `maxItems` up to 256 and `maxLength` up to 2048 are
-  enforced; the plan schema stays far below them.
-- A 429 is reported as "Rate limit exceeded" (`rate_limit_error`). The client does not retry.
-- Not found in the docs, to be confirmed by the first real call: the response field
-  carrying the text (assumed OpenAI-compatible `choices[0].message.content`), the
-  rate-limit numbers, and the exact error body. The parser treats the reply as hostile
-  whether or not the schema was enforced, so schema support is a convenience only.
-- Sources: docs.x.ai/docs/guides/structured-outputs, /docs/models, /docs/api-reference and
-  /developers/rest-api-reference/inference/legacy.
+## Amendment 2026-10-16: the provider is Groq, not xAI
+The first key supplied was a Groq key (`gsk_...`), and the xAI account had no credits
+(HTTP 403) and then rejected the Groq key (HTTP 400). The owner chose to use Groq with a
+Qwen model and to remove the xAI references. Nothing else in the decision changes: the
+planner is opt-in, its output is untrusted, there is no fallback and no retry, and the key
+stays in `.env`, read by `app/` only. The key name is now `GROQ_API_KEY`.
+
+## Groq API facts (docs read 2026-10-16; the call was exercised the same day)
+- Endpoint `POST https://api.groq.com/openai/v1/chat/completions`, header
+  `Authorization: Bearer <key>`. The client also sends a fixed `User-Agent`, because the
+  default Python one is the kind some edge services refuse.
+- Default model `qwen/qwen3.8-27b` (a preview model on Groq, listed at 0.80 USD input and
+  4.00 USD output per 1M tokens, 250K TPM and 1K RPM). It is one of the models documented
+  to support `response_format` = `{"type": "json_schema", "json_schema": {"name": ...,
+  "schema": ..., "strict": true}}`. The others listed are `openai/gpt-oss-20b`,
+  `openai/gpt-oss-120b` and `meta-models/muse-spark-open`. `--model` overrides the default.
+  Preview models can change or be withdrawn, so the default may need updating.
+- Confirmed by the live runs: the reply text is in `choices[0].message.content`, and the
+  strict schema was honoured (the traces show 2 to 4 valid requests each time). The parser
+  still treats every reply as hostile, so schema support is a convenience only.
+- Error bodies are JSON with an `error` string; the client shows it, cut to 200 characters
+  with the key redacted.
+- Sources: console.groq.com/docs/structured-outputs and console.groq.com/docs/models.
+- The earlier xAI facts (endpoint, `grok-4.7`) are withdrawn and no code refers to them.
 
 ## Alternatives considered
 - **A model inside each domain agent.** More agentic, but the model would sit next to the
@@ -96,7 +103,7 @@ Add a planner that is chosen per run and defaults to the current one:
   actions, and the same deterministic checks and human approval decide what runs".
 - A new exit code, 5, means "the model planner failed"; code 2 still covers a plan the
   existing planner refuses.
-- Employee data in the request text leaves the machine for xAI. The prototype uses
+- Employee data in the request text leaves the machine for Groq. The prototype uses
   synthetic data only, and the docs say so.
 - Model runs cost quota and are not reproducible. Gate results and the exact expected
   results come from the deterministic path and the fake client, never from a live model.

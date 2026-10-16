@@ -7,7 +7,7 @@ test_changed_plan_aborts_before_any_token_is_minted (test_g4_refusal.RefusedAppr
 test_replayed_approval_aborts_and_leaves_domain_ledgers_untouched (test_g4_refusal.RefusedApprovals.test_replayed_approval_aborts_and_leaves_domain_ledgers_untouched) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 13.546s
+Ran 7 tests in 13.460s
 
 OK
 gate g4 exit 0

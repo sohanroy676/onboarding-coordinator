@@ -283,12 +283,12 @@ test_tampered_data_detected_at_that_entry (test_unit_ledger.LedgerTests.test_tam
 test_truncated_last_line_is_reported_not_ignored (test_unit_ledger.LedgerTests.test_truncated_last_line_is_reported_not_ignored) ... ok
 test_unserialisable_data_raises_and_writes_nothing (test_unit_ledger.LedgerTests.test_unserialisable_data_raises_and_writes_nothing) ... ok
 test_error_detail_handles_nested_and_missing_text (test_unit_model_planner.ClientTests.test_error_detail_handles_nested_and_missing_text) ... ok
-test_error_text_from_xai_is_included_and_made_safe (test_unit_model_planner.ClientTests.test_error_text_from_xai_is_included_and_made_safe) ... ok
+test_error_text_from_groq_is_included_and_made_safe (test_unit_model_planner.ClientTests.test_error_text_from_groq_is_included_and_made_safe) ... ok
 test_no_key_is_refused (test_unit_model_planner.ClientTests.test_no_key_is_refused) ... ok
 test_odd_reply_shapes_are_reported (test_unit_model_planner.ClientTests.test_odd_reply_shapes_are_reported) ... ok
 test_other_statuses_and_transport_errors_are_reported (test_unit_model_planner.ClientTests.test_other_statuses_and_transport_errors_are_reported) ... ok
 test_rate_limit_is_reported_and_not_retried (test_unit_model_planner.ClientTests.test_rate_limit_is_reported_and_not_retried) ... ok
-test_rate_limit_message_also_carries_xai_text (test_unit_model_planner.ClientTests.test_rate_limit_message_also_carries_xai_text) ... ok
+test_rate_limit_message_also_carries_provider_text (test_unit_model_planner.ClientTests.test_rate_limit_message_also_carries_provider_text) ... ok
 test_request_shape (test_unit_model_planner.ClientTests.test_request_shape) ... ok
 test_bad_shapes_are_refused (test_unit_model_planner.ParseProposalTests.test_bad_shapes_are_refused) ... ok
 test_oversized_and_non_string_input_is_refused (test_unit_model_planner.ParseProposalTests.test_oversized_and_non_string_input_is_refused) ... ok
@@ -309,7 +309,7 @@ test_planted_ledger_internals_import_from_app_is_flagged (test_unit_perimeter_sc
 test_env_example_is_scanned_and_a_placeholder_passes (test_unit_perimeter_scan.EnvFileRules.test_env_example_is_scanned_and_a_placeholder_passes) ... ok
 test_key_in_the_exempt_env_file_is_not_flagged (test_unit_perimeter_scan.EnvFileRules.test_key_in_the_exempt_env_file_is_not_flagged) ... ok
 test_same_key_in_other_files_is_flagged (test_unit_perimeter_scan.EnvFileRules.test_same_key_in_other_files_is_flagged) ... ok
-test_short_xai_prefix_is_not_a_key (test_unit_perimeter_scan.EnvFileRules.test_short_xai_prefix_is_not_a_key) ... ok
+test_short_gsk_prefix_is_not_a_key (test_unit_perimeter_scan.EnvFileRules.test_short_gsk_prefix_is_not_a_key) ... ok
 test_app_and_onboard_may_use_both (test_unit_perimeter_scan.ModelEnvUseRules.test_app_and_onboard_may_use_both) ... ok
 test_importing_app_from_outside_is_flagged (test_unit_perimeter_scan.ModelEnvUseRules.test_importing_app_from_outside_is_flagged) ... ok
 test_key_name_or_env_path_in_coordinator_is_flagged (test_unit_perimeter_scan.ModelEnvUseRules.test_key_name_or_env_path_in_coordinator_is_flagged) ... ok
@@ -446,7 +446,7 @@ test_failed_write_mints_no_token_and_does_not_count (test_unit_tokens.Persistent
 test_without_a_path_nothing_is_written (test_unit_tokens.PersistentCounterTests.test_without_a_path_nothing_is_written) ... ok
 
 ----------------------------------------------------------------------
-Ran 446 tests in 174.391s
+Ran 446 tests in 184.207s
 
 OK
 suite exit 0

@@ -14,7 +14,7 @@ test_planted_write_outside_the_allowlist_is_flagged (test_g6_perimeters.StaticWr
 test_write_sites_match_the_allowlist_exactly (test_g6_perimeters.StaticWriteScan.test_write_sites_match_the_allowlist_exactly) ... ok
 
 ----------------------------------------------------------------------
-Ran 14 tests in 12.153s
+Ran 14 tests in 11.349s
 
 OK
 gate g6 exit 0

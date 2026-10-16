@@ -7,7 +7,7 @@ test_grant_run_shows_the_refusal_in_it (test_g5_evidence_cost.OneRunRebuilds.tes
 test_rejected_token_is_counted_apart_from_actions (test_g5_evidence_cost.OneRunRebuilds.test_rejected_token_is_counted_apart_from_actions) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 11.776s
+Ran 7 tests in 11.592s
 
 OK
 gate g5 exit 0

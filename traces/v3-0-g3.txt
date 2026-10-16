@@ -10,7 +10,7 @@ test_will_not_steps_are_approved_and_warned_not_dropped (test_g3_approval.OneApp
 test_concurrent_consumes_of_one_approval_have_one_winner (test_g3_approval.RaceTests.test_concurrent_consumes_of_one_approval_have_one_winner) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 16.195s
+Ran 10 tests in 15.778s
 
 OK
 gate g3 exit 0

@@ -8,7 +8,7 @@ test_oversized_or_too_long_proposals_end_the_run_before_approval (test_g7_model_
 test_the_plan_subject_and_hash_come_from_the_flow_not_the_model (test_g7_model_authority.ModelAuthorityGate.test_the_plan_subject_and_hash_come_from_the_flow_not_the_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 10.536s
+Ran 8 tests in 10.031s
 
 OK
 gate g7 exit 0
