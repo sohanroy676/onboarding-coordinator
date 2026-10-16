@@ -17,6 +17,7 @@ import provision
 from app.onboarding import DEFAULT_REQUEST_TEXTS, DOMAINS
 from app.server import (HOST, MAX_BODY_BYTES, PENDING_TTL_SECONDS, STATIC_DIR,
                         STATIC_ROUTES, UiServer, UiState)
+from app.model_planner import ModelPlannerError
 from provision import ProvisionError
 from tests.helpers import FakeClock
 from tests.test_unit_app_onboarding import PORTS, FakePost, fake_fetch
@@ -77,6 +78,31 @@ def serve(ui):
     return server, thread
 
 
+class FakeModel:
+    """A model client that returns a fixed reply or raises; counts the calls."""
+
+    model = "ui-fake"
+
+    def __init__(self, reply=None, error=None):
+        self.reply = reply
+        self.error = error
+        self.calls = []
+
+    def propose(self, system_prompt, user_text):
+        self.calls.append((system_prompt, user_text))
+        if self.error:
+            raise self.error
+        return self.reply
+
+
+def proposal(*pairs):
+    return json.dumps({"requests": [{"domain": d, "action": a} for d, a in pairs]})
+
+
+def refusing_factory():
+    raise AssertionError("the model client must not be built in this mode")
+
+
 class HttpClient:
     """Raw HTTP so the tests can send a bad Host, Origin or length on purpose."""
 
@@ -131,8 +157,11 @@ class UiCase(unittest.TestCase):
         self.provisioner = FakeProvisioner(tmp.name)
         self.clock = FakeClock()
         self.post = FakePost()
+        self.model = FakeModel(
+            reply=proposal(("hr", "create_record"), ("it", "assign_laptop")))
         self.ui = UiState(self.provisioner, clock=self.clock, post=self.post,
-                          fetch=fake_fetch, csrf_token=TOKEN)
+                          fetch=fake_fetch, csrf_token=TOKEN,
+                          client_factory=lambda: self.model)
         self.server, thread = serve(self.ui)
         self.addCleanup(self.stop_server, thread)
         self.http = HttpClient(self.server.server_address[1], TOKEN)
@@ -540,6 +569,164 @@ class RunViewTests(UiCase):
             self.assertEqual((status, body["error"]), (404, "not_found"), path)
 
 
+class ModelPlannerTests(UiCase):
+    """The opt-in model planner through the UI (ADR-0011). Fake client, no network."""
+
+    def model_plan(self, **extra):
+        payload = {"subject": SUBJECT, "planner": "model", "request_text": "a laptop"}
+        payload.update(extra)
+        return self.http.call("POST", "/api/plans", payload)
+
+    def test_model_plan_is_built_and_names_its_planner(self):
+        self.start_all()
+        status, body = self.model_plan()
+        self.assertEqual(status, 200, body)
+        self.assertEqual(body["planner"], "model (ui-fake)")
+        steps = [(s["domain"], s["action"]) for s in body["plan"]["steps"]]
+        self.assertEqual(steps, [("hr", "create_record"), ("it", "assign_laptop")])
+        self.assertEqual(body["plan"]["subject"], SUBJECT)
+        self.assertRegex(body["plan_hash"], PLAN_HASH)
+        self.assertEqual(self.post.calls, [])
+
+    def test_only_the_text_and_action_names_go_to_the_model(self):
+        self.start_all()
+        self.model_plan()
+        system_prompt, user_text = self.model.calls[0]
+        self.assertEqual(user_text, "a laptop")
+        self.assertNotIn(SUBJECT, system_prompt + user_text)
+
+    def test_model_plan_can_be_approved_and_run(self):
+        self.start_all()
+        _status, plan = self.model_plan()
+        status, result = self.http.call(
+            "POST", "/api/plans/%s/approve" % plan["plan_hash"], {})
+        self.assertEqual((status, result["status"]), (200, "success"))
+        self.assertEqual(len(self.post.calls), 2)
+
+    def test_deterministic_plan_names_its_planner_and_never_builds_a_client(self):
+        self.ui.client_factory = refusing_factory
+        self.start_all()
+        body = self.make_plan()
+        self.assertEqual(body["planner"], "deterministic")
+        status, body = self.http.call("POST", "/api/plans", {
+            "subject": SUBJECT, "planner": "deterministic",
+            "requests": ["hr:create_record"]})
+        self.assertEqual((status, body["planner"]), (200, "deterministic"))
+
+    def test_bad_planner_values_are_refused(self):
+        self.start_all()
+        for planner in ("", "grok", "MODEL", 7, ["model"], {"a": 1}):
+            status, body = self.http.call("POST", "/api/plans", {
+                "subject": SUBJECT, "planner": planner,
+                "requests": ["hr:create_record"]})
+            self.assertEqual((status, body["error"]), (400, "bad_input"), planner)
+        self.assertEqual(self.model.calls, [])
+
+    def test_requests_and_request_text_cannot_be_combined(self):
+        self.start_all()
+        status, body = self.model_plan(requests=["hr:create_record"])
+        self.assertEqual((status, body["error"]), (400, "bad_input"))
+        status, body = self.http.call("POST", "/api/plans", {
+            "subject": SUBJECT, "requests": ["hr:create_record"],
+            "request_text": "a laptop"})
+        self.assertEqual((status, body["error"]), (400, "bad_input"))
+        self.assertEqual(self.model.calls, [])
+
+    def test_bad_request_text_is_refused_before_any_model_call(self):
+        self.start_all()
+        for text in (None, "", "   ", 7, ["a"], "x" * 1001, "caf\u00e9", "two\nlines"):
+            status, body = self.model_plan(request_text=text)
+            self.assertEqual((status, body["error"]), (400, "bad_input"), text)
+        status, body = self.http.call("POST", "/api/plans", {
+            "subject": SUBJECT, "planner": "model"})
+        self.assertEqual((status, body["error"]), (400, "bad_input"))
+        self.assertEqual(self.model.calls, [])
+
+    def test_bad_subject_is_refused_before_any_model_call(self):
+        self.start_all()
+        status, body = self.model_plan(subject="no-at-sign")
+        self.assertEqual((status, body["error"]), (400, "bad_input"))
+        self.assertEqual(self.model.calls, [])
+
+    def test_domains_down_is_refused_before_any_model_call(self):
+        self.provisioner.up = {"hr", "it"}
+        status, body = self.model_plan()
+        self.assertEqual((status, body["error"]), (409, "domains_down"))
+        self.assertEqual(self.model.calls, [])
+
+    def test_model_failure_gives_502_and_stores_no_plan(self):
+        self.start_all()
+        self.model.error = ModelPlannerError(
+            "model call refused: rate limit exceeded (HTTP 429)")
+        status, body = self.model_plan()
+        self.assertEqual((status, body["error"]), (502, "model_failed"))
+        self.assertIn("rate limit", body["message"])
+        self.assertEqual(self.ui._pending, {})
+        self.assertEqual(self.post.calls, [])
+        self.assertEqual(len(self.model.calls), 1)
+
+    def test_missing_key_gives_502_and_stores_no_plan(self):
+        def no_key():
+            raise ModelPlannerError("no API key")
+        self.ui.client_factory = no_key
+        self.start_all()
+        status, body = self.model_plan()
+        self.assertEqual((status, body["error"]), (502, "model_failed"))
+        self.assertEqual(self.ui._pending, {})
+
+    def test_unusable_replies_give_502_with_no_fallback(self):
+        self.start_all()
+        replies = ("not json", "[]", '{"requests": []}',
+                   '{"requests": [{"domain": "hr", "action": "x", "extra": 1}]}',
+                   '{"requests": [{"domain": "payroll", "action": "pay"}]}',
+                   '{"requests": [{"domain": "hr", "action": "Drop Table"}]}',
+                   "x" * 5000)
+        for reply in replies:
+            self.model.reply = reply
+            status, body = self.model_plan()
+            self.assertEqual((status, body["error"]), (502, "model_failed"), reply[:30])
+        self.assertEqual(self.ui._pending, {})
+        self.assertEqual(self.post.calls, [])
+
+    def test_unknown_action_from_the_model_is_refused_at_planning(self):
+        self.start_all()
+        self.model.reply = proposal(("it", "drop_database"))
+        status, body = self.model_plan()
+        self.assertEqual((status, body["error"]), (400, "plan_refused"))
+        self.assertEqual(self.ui._pending, {})
+
+    def test_will_not_action_from_the_model_stays_in_the_plan_with_a_warning(self):
+        self.start_all()
+        self.model.reply = proposal(("hr", "create_record"), ("it", "grant_admin_access"))
+        status, body = self.model_plan()
+        self.assertEqual(status, 200, body)
+        self.assertIn("grant_admin_access", [s["action"] for s in body["plan"]["steps"]])
+        self.assertIn("grant_admin_access", " ".join(body["warnings"]))
+
+    def test_no_key_name_or_value_in_any_response_or_page(self):
+        self.start_all()
+        self.model.error = ModelPlannerError("HTTP 401: bad key")
+        self.model_plan()
+        self.model.error = None
+        self.model_plan()
+        self.http.call("GET", "/")
+        self.http.call("GET", "/static/app.js")
+        everything = b"".join(self.http.bodies)
+        self.assertNotIn(b"gsk_", everything)
+        self.assertNotIn(b"GROQ_API_KEY", everything)
+
+    def test_page_has_the_planner_selector_and_note(self):
+        status, _headers, data = self.http.send("GET", "/", self.http.headers("GET"))
+        page = data.decode("utf-8")
+        self.assertEqual(status, 200)
+        for needle in ('id="planner"', 'value="model"', 'id="request-text"',
+                       "leaves this machine", "Use synthetic data only"):
+            self.assertIn(needle, page)
+        script = self.http.call("GET", "/static/app.js")[1].decode("utf-8")
+        self.assertIn("request_text", script)
+        self.assertIn("made.planner", script)
+
+
 class LiveUiFlow(unittest.TestCase):
     """The whole flow on the real domains, through the UI's HTTP API."""
 
@@ -592,6 +779,24 @@ class LiveUiFlow(unittest.TestCase):
         refused = [row for row in result["rows"] if row["outcome"] == "refused"]
         self.assertEqual([(row["domain"], row["action"]) for row in refused],
                          [("it", "grant_admin_access")])
+
+    def test_model_plan_on_real_domains_with_a_fake_client(self):
+        model = FakeModel(reply=proposal(("hr", "create_record"),
+                                         ("it", "grant_admin_access"),
+                                         ("facilities", "issue_badge")))
+        self.ui.client_factory = lambda: model
+        for name in DOMAINS:
+            self.http.call("POST", "/api/domains/%s/start" % name, {})
+        status, plan = self.http.call("POST", "/api/plans", {
+            "subject": SUBJECT, "planner": "model", "request_text": "admin please"})
+        self.assertEqual(status, 200, plan)
+        self.assertEqual(plan["planner"], "model (ui-fake)")
+        _status, result = self.http.call(
+            "POST", "/api/plans/%s/approve" % plan["plan_hash"], {})
+        self.assertEqual(result["status"], "partial")
+        refused = [(r["domain"], r["action"]) for r in result["rows"]
+                   if r["outcome"] == "refused"]
+        self.assertEqual(refused, [("it", "grant_admin_access")])
 
     def test_stopping_one_domain_leaves_the_others_running(self):
         for name in DOMAINS:
