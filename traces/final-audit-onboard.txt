@@ -1,0 +1,33 @@
+plan for audit.001@example.test
+  hr          create_record      supported      {}
+  hr          enroll_benefits    supported      {}
+  it          create_account     supported      {}
+  it          assign_laptop      supported      {}
+  facilities  issue_badge        supported      {}
+  facilities  assign_desk        supported      {}
+Approve this plan? [y/N] run id: 77940183120afa38
+
+== onboarding run
+run id: 77940183120afa38
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+hr          enroll_benefits    supported      executed   -
+it          create_account     supported      executed   -
+it          assign_laptop      supported      executed   -
+facilities  issue_badge        supported      executed   -
+facilities  assign_desk        supported      executed   -
+status: success  executed 6  refused 0  not_executed 0
+exchanges so far: 12
+run id: 77940183120afa38
+domain      executed  refused  failed  token_rejected  chain
+hr          2         0        0       0               ok
+it          2         0        0       0               ok
+facilities  2         0        0       0               ok
+total: executed 6  refused 0  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+all domains stopped
+exit 0

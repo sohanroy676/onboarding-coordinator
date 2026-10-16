@@ -1,0 +1,11 @@
+$ git grep -n -i -E "OC_DOMAIN_KEY|domain_key|secret\s*=|BEGIN .*PRIVATE" -- coordinator/
+(broad pattern: matches names and docstrings only, no values; this is the ADR-0007/0008 derivation limit)
+coordinator/tokens.py:48:def derive_domain_key(exchange_secret, domain):
+coordinator/tokens.py:49:    """Return the domain's key as a hex string (the OC_DOMAIN_KEY value)."""
+coordinator/tokens.py:82:        self._secret = exchange_secret
+coordinator/tokens.py:106:        key = derive_domain_key(self._secret, domain)
+exit 0
+
+$ git grep -n -E "[0-9a-fA-F]{32,}|AKIA[0-9A-Z]{16}|BEGIN .*PRIVATE" -- coordinator/
+(credential-value pattern: 32+ hex digits, cloud key id, private key block)
+exit 1 (1 = zero matches)

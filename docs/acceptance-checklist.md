@@ -77,7 +77,7 @@ below is the project's deliverable list, supplied by the author. Status words me
 | D1 | Source archive | met with note | `dist/onboarding_coordinator.zip`, built with `git archive v2.0.0` (commit e1d262d, 170 entries, SHA-256 63CF2BE1C1C7162113AB4B78FFCA01C89B153CF36817FB39634B8B64409702CD). Extracted to a scratch folder: compileall exit 0, suite 385 OK (`traces/v2-0-archive-tests.txt`). | Holds the 11 source files (domains 4, coordinator 5, ledger 2), plus `app/`, `provision.py`, `demo.py`, `onboard.py`, `tests/`, `docs/`, `traces/`. Name follows the deliverable list. The archive is not tracked in git (`dist/` is ignored). It is built from the tag, so it has the README as it was at e1d262d. The README merged later at 2702569. The v1.0 archive was replaced by this one. |
 | D2 | Implementation document | met with note | `docs/implementation.md`; traces `v0-6-*` to `v0-9-*`, `v1-0-*`, and re-runs at the milestone tags: `traces/rerun-v0-2-tests.txt` (80 OK), `rerun-v0-3-tests.txt` (116 OK), `rerun-v0-3-g1.txt`, `rerun-v0-4-tests.txt` (126 OK), `rerun-v0-4-g2.txt`, `rerun-v0-5-tests.txt` (168 OK), `rerun-v0-5-g3.txt` | The v0.2 to v0.5 traces were not saved at the time the milestones were built. They are re-runs of the tagged code in fresh clones, and say so in their names. |
 | D3 | Domain agents (M1) | met | `test_g1_domains_registry` (`traces/v1-0-g1.txt`); will_not refusal in `test_g4_refusal` (`traces/v1-0-g4.txt`) | Three processes, each with its declaration and its will_not list. |
-| D4 | Capability registry (M2) | met with note | `test_g1_domains_registry.test_exact_ttl_age_is_fresh_and_one_more_second_is_stale`, `test_g1_domains_registry.test_forced_stale_declaration_is_refused_then_refreshed`, `test_g1_domains_registry.test_unknown_domain_raises_keyerror` (`traces/v1-0-g1.txt`) | The expected figures (0.1 s old, 0.01 s max) are not used. Tests use a 60 s TTL and an injected clock. |
+| D4 | Capability registry (M2) | met with note | `test_g1_domains_registry.test_exact_ttl_age_is_fresh_and_one_more_second_is_stale`, `test_g1_domains_registry.test_forced_stale_declaration_is_refused_then_refreshed`, `test_g1_domains_registry.test_unknown_domain_raises_keyerror` (`traces/v1-0-g1.txt`) | The expected figures (0.1 s old, 0.01 s max) are tested in G1 since the final audit; other tests use a 60 s TTL and an injected clock. |
 | D5 | Token exchange (M3) | met | `test_g2_delegation.test_token_for_one_domain_is_refused_by_each_other_domain` (domain_mismatch), `test_g2_delegation.test_missing_or_broken_tokens_are_malformed`, `test_g2_delegation.test_exchange_secret_cannot_sign_a_token`, `test_g4_refusal` (correct token executes) (`traces/v1-0-g2.txt`) | |
 | D6 | Consolidated planning (M4) | met | `test_unit_planner` (one plan, one hash); `test_g3_approval` (`traces/v1-0-g3.txt`) | |
 | D7 | Plan approval (M5) | met | `test_g3_approval.test_replay_after_restart_is_refused` (approval_already_consumed), `test_g3_approval.test_changed_sub_plan_in_one_domain_is_refused` (plan_changed_since_approval) (`traces/v1-0-g3.txt`); demo scenario 3 (`traces/v1-0-demo.txt`) | |
@@ -201,3 +201,16 @@ machine can act as the operator. Pending plans are held only in memory, so a res
 the UI drops them. Dispatch stays sequential, so a slow domain makes the request wait.
 No browser was used to test the page. Its behaviour is covered by the HTTP tests and the
 transcript, not by a browser test.
+
+## Final audit (against the PS3 problem statement)
+
+The full audit is `docs/final-audit.md`. Its traces are from real runs of the audited tree.
+
+| Check | Test or command | Trace |
+| --- | --- | --- |
+| A declaration 0.1 s old with a 0.01 s maximum is refused; unknown domain raises | `test_g1_domains_registry.DomainsDiscoveryTests.test_rubric_figures_declaration_0_1s_old_with_max_0_01s_is_refused` | `traces/final-audit-g1.txt` |
+| Refused POSTs are always answered (found on Python 3.12) | `test_unit_app_server.OriginAndCsrfTests.test_refusal_of_a_post_with_a_body_is_always_readable`, `test_unit_domain_http.HttpEdgeTests.test_refused_post_with_a_body_is_always_answered` | `traces/final-audit-tests.txt`, `traces/final-audit-tests-py312.txt` |
+| Gates G1 16, G2 11, G3 10, G4 7, G5 7, G6 11 | `python -m unittest discover -s tests -p "test_gN_*.py" -v` | `traces/final-audit-g1.txt` to `traces/final-audit-g6.txt` |
+| Demo: partial 6/1, aborted replay, multiple 3.0 from 15 and 5 | `python demo.py` | `traces/final-audit-demo.txt` |
+| One run rebuilds hr 2, it 2, facilities 2 | `python -m ledger.reconstruct <run_id>` | `traces/final-audit-reconstruct.txt`, `traces/final-audit-reconstruct-partial.txt` |
+| No credential value in `coordinator/` | `git grep` (value pattern, zero matches) | `traces/final-audit-coordinator-grep.txt` |
