@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Now
-- v2.0.1 (patch: the Windows reset fix from the final audit, changelog, review guide) is prepared on docs/v2-0-1-release; not merged or tagged yet. v2.0.0 is released (tag v2.0.0 at e1d262d, pushed). Nothing else is planned; see Later / ideas.
+- v2.0.1 (patch: the Windows reset fix from the final audit, changelog, review guide) is released (tag v2.0.1 at e263319, pushed, CI green on the tag). v2.0.0 is released (tag v2.0.0 at e1d262d, pushed). Nothing else is planned; see Later / ideas.
 
 ## Done
 - v2.0.1 Final audit patch: refused POSTs answered without a connection reset on Windows (`app/server.py`, `domains/domain_agent.py`), G1 test for the 0.1 s / 0.01 s stale case, `docs/final-audit.md`, `docs/review-guide.md`. Suite 388 plus the review-guide docs tests.
