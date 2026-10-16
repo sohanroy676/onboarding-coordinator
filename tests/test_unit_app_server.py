@@ -216,6 +216,15 @@ class OriginAndCsrfTests(UiCase):
                                           override={"X-CSRF-Token": None})
             self.assertEqual((status, body["error"]), (403, "bad_csrf"), path)
 
+    def test_refusal_of_a_post_with_a_body_is_always_readable(self):
+        # The server must read the refused body, or a Windows close can reset
+        # the connection before the client reads the 403.
+        for attempt in range(40):
+            status, body = self.http.call("POST", "/api/plans",
+                                          {"subject": "x" * 4000},
+                                          override={"X-CSRF-Token": None})
+            self.assertEqual((status, body["error"]), (403, "bad_csrf"), attempt)
+
     def test_foreign_origin_is_refused(self):
         status, body = self.http.call("POST", "/api/domains/hr/start", {},
                                       override={"Origin": "http://evil.test"})
