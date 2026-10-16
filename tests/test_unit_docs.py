@@ -1,10 +1,11 @@
-"""Keep docs/acceptance-checklist.md honest: every cited test and trace exists."""
+"""Keep the checklist and the review guide honest: every cited test and trace exists."""
 import re
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CHECKLIST = ROOT / "docs" / "acceptance-checklist.md"
+REVIEW_GUIDE = ROOT / "docs" / "review-guide.md"
 TEST_REF = re.compile(r"(test_(?:g\d|unit)_\w+)\.(?:(\w+)\.)?(test_\w+)")
 TRACE_REF = re.compile(r"traces/[\w.-]+\.txt")
 
@@ -59,6 +60,25 @@ class AcceptanceChecklistTest(unittest.TestCase):
     def test_planted_missing_class_is_reported(self):
         text = "`test_g6_perimeters.NoSuchClass.test_reconstruct_is_read_only`"
         self.assertEqual(find_missing(text), ["no class test_g6_perimeters.NoSuchClass"])
+
+
+class ReviewGuideTest(unittest.TestCase):
+
+    def setUp(self):
+        self.text = REVIEW_GUIDE.read_text(encoding="utf-8")
+
+    def test_guide_cites_traces(self):
+        self.assertGreater(len(set(TRACE_REF.findall(self.text))), 5)
+
+    def test_every_cited_test_and_trace_exists(self):
+        self.assertEqual(find_missing(self.text), [])
+
+    def test_guide_is_ascii(self):
+        self.text.encode("ascii")
+
+    def test_planted_missing_trace_in_guide_text_is_reported(self):
+        text = self.text + " see traces/final-audit-nothing.txt"
+        self.assertEqual(find_missing(text), ["no trace traces/final-audit-nothing.txt"])
 
 
 if __name__ == "__main__":
