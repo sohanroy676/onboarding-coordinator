@@ -121,7 +121,11 @@ label {
   gap: 4px;
 }
 
-input, textarea {
+[hidden] {
+  display: none;
+}
+
+input, textarea, select {
   font: inherit;
   color: var(--fg);
   background: var(--bg);

@@ -24,9 +24,19 @@
 <label>New hire (subject)
 <input id="subject" name="subject" autocomplete="off" required value="new.hire@example.test">
 </label>
-<label>Requests, one domain:action per line
+<label>Planner
+<select id="planner" name="planner">
+<option value="deterministic" selected>deterministic (default, no model)</option>
+<option value="model">model (opt-in, Groq; the text leaves this machine)</option>
+</select>
+</label>
+<label id="requests-label">Requests, one domain:action per line
 <textarea id="requests" name="requests" rows="6" spellcheck="false"></textarea>
 </label>
+<label id="request-text-label" hidden>Request text for the model (printable ASCII, at most 1000 characters)
+<textarea id="request-text" name="request_text" rows="3" maxlength="1000" spellcheck="false"></textarea>
+</label>
+<p class="note" id="model-note" hidden>The model only proposes actions. The same plan checks, your approval and each domain's refusals decide what runs. Use synthetic data only. If the model call fails, no plan is made and nothing is sent.</p>
 <button type="submit">Make plan</button>
 </form>
 </section>

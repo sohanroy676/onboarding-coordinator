@@ -28,8 +28,11 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import provision
-from app.onboarding import (DEFAULT_REQUEST_TEXTS, DOMAINS, InputError,
-                            execute_plan, parse_request, validate_subject)
+from app.model_planner import (DEFAULT_MODEL, GroqClient, ModelPlannerError,
+                               read_key)
+from app.onboarding import (DEFAULT_REQUEST_TEXTS, DOMAINS, PLANNERS, InputError,
+                            execute_plan, parse_request, propose_requests,
+                            validate_request_text, validate_subject)
 from coordinator.planner import build_plan, plan_hash, warnings
 from coordinator.registry import Registry, RegistryError
 from coordinator.run import new_run_id, post_execute
@@ -67,6 +70,11 @@ class UiError(Exception):
         self.message = message
 
 
+def groq_client():
+    """Build the model client from the .env key. Called at plan time, never at start."""
+    return GroqClient(read_key(), DEFAULT_MODEL)
+
+
 class UiState:
     """Everything the UI does, with no HTTP in it. The tests call this directly.
 
@@ -75,8 +83,9 @@ class UiState:
     """
 
     def __init__(self, provisioner, *, clock=time.time, post=post_execute,
-                 fetch=None, csrf_token=None):
+                 fetch=None, csrf_token=None, client_factory=groq_client):
         self.provisioner = provisioner
+        self.client_factory = client_factory
         self.clock = clock
         self.post = post
         self.fetch = fetch
@@ -113,11 +122,30 @@ class UiState:
             self.provisioner.stop_domain(name)
         return self.status()
 
-    def make_plan(self, subject, request_texts):
-        """Validate the input, refresh every domain, and keep the plan for approval."""
+    def make_plan(self, subject, request_texts, planner=None, request_text=None):
+        """Validate the input, refresh every domain, and keep the plan for approval.
+
+        planner "model" (ADR-0011) takes request_text and asks the model for the
+        requests; the default takes request_texts. A model failure ends here with
+        502 before any plan is stored: nothing is minted or sent, and there is no
+        fallback to the other planner.
+        """
+        planner = "deterministic" if planner is None else planner
         try:
             validate_subject(subject)
-            requests = [parse_request(text) for text in request_texts]
+            if planner not in PLANNERS:
+                raise InputError("planner must be one of %s" % ", ".join(PLANNERS))
+            if planner == "model":
+                if request_texts:
+                    raise InputError("requests cannot be combined with the model planner")
+                if not isinstance(request_text, str):
+                    raise InputError("request_text must be a string")
+                validate_request_text(request_text)
+                requests = None
+            else:
+                if request_text is not None:
+                    raise InputError("request_text needs the model planner")
+                requests = [parse_request(text) for text in request_texts]
         except (InputError, TypeError, AttributeError) as exc:
             raise UiError(400, "bad_input", str(exc))
         down = [name for name in DOMAINS if not self.provisioner.running(name)]
@@ -127,6 +155,13 @@ class UiState:
         registry = Registry(dict(self.provisioner.ports), self.clock, fetch=self.fetch)
         try:
             registry.refresh_all()
+            if planner == "model":
+                try:
+                    client = self.client_factory()
+                    requests = propose_requests(registry, client, request_text)
+                except ModelPlannerError as exc:
+                    raise UiError(502, "model_failed", str(exc))
+                planner = "model (%s)" % client.model
             plan = build_plan(registry, subject, requests)
         except RegistryError as exc:
             raise UiError(503, "domain_unavailable", str(exc))
@@ -138,8 +173,8 @@ class UiState:
             self._pending = {key: entry for key, entry in self._pending.items()
                              if entry[1] > now}
             self._pending[digest] = (plan, now + PENDING_TTL_SECONDS)
-        return {"plan": plan, "plan_hash": digest, "warnings": warnings(plan),
-                "expires_at": now + PENDING_TTL_SECONDS}
+        return {"plan": plan, "plan_hash": digest, "planner": planner,
+                "warnings": warnings(plan), "expires_at": now + PENDING_TTL_SECONDS}
 
     def approve(self, digest):
         """Approve and run the plan the user saw, identified by its hash."""
@@ -272,8 +307,9 @@ class UiHandler(BaseHTTPRequestHandler):
                 return self._send_json(200, self.ui.start_domain(name))
             return self._send_json(200, self.ui.stop_domain(name))
         if path == "/api/plans":
-            return self._send_json(200, self.ui.make_plan(body.get("subject"),
-                                                          body.get("requests")))
+            return self._send_json(200, self.ui.make_plan(
+                body.get("subject"), body.get("requests"),
+                body.get("planner"), body.get("request_text")))
         match = APPROVE_ROUTE.fullmatch(path)
         if match:
             return self._send_json(200, self.ui.approve(match.group(1)))

@@ -112,6 +112,7 @@ function showPlan(made) {
   const box = document.getElementById("plan");
   clear(box);
   box.appendChild(el("p", "Subject: " + made.plan.subject));
+  box.appendChild(el("p", "Planner: " + made.planner));
   box.appendChild(el("p", "Plan hash: " + made.plan_hash, "hash"));
   const rows = made.plan.steps.map((step) => [
     step.domain, step.action, step.classification, JSON.stringify(step.params),
@@ -165,14 +166,27 @@ async function loadRebuild(runId) {
 document.getElementById("plan-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const subject = document.getElementById("subject").value.trim();
-  const requests = document.getElementById("requests").value
-    .split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
+  const planner = document.getElementById("planner").value;
+  const payload = { subject: subject, planner: planner };
+  if (planner === "model") {
+    payload.request_text = document.getElementById("request-text").value.trim();
+  } else {
+    payload.requests = document.getElementById("requests").value
+      .split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
+  }
   try {
-    showPlan(await api("POST", "/api/plans", { subject: subject, requests: requests }));
+    showPlan(await api("POST", "/api/plans", payload));
     say("Plan ready. Check the steps and warnings, then approve.", false);
   } catch (err) {
     say(err.message, true);
   }
+});
+
+document.getElementById("planner").addEventListener("change", (event) => {
+  const model = event.currentTarget.value === "model";
+  document.getElementById("requests-label").hidden = model;
+  document.getElementById("request-text-label").hidden = !model;
+  document.getElementById("model-note").hidden = !model;
 });
 
 document.getElementById("approve").addEventListener("click", async (event) => {
