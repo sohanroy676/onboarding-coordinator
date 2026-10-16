@@ -5,6 +5,26 @@ Format follows Keep a Changelog. Generated from Conventional Commits — regener
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-16
+
+Opt-in model planner on the CLI. Major release: it reverses the "no language model" scope for this version only (ADR-0011). Deterministic mode, the gates' expected results and `demo.py` never use a model. The web UI selector is not part of this release.
+
+### Added
+- `python onboard.py --subject <id> --planner model --request-text "..." [--model <name>]`: a Groq model (default `qwen/qwen3.8-27b`) turns free text into (domain, action) requests. It only proposes; the registry, the plan hash, the human approval, scoped tokens and each domain's refusals decide what runs (`84e6f9f`, `1f0c01f`).
+- `app/model_planner.py`: strict `.env` reader, Groq client over `urllib` with an injected transport, strict proposal parser. `.env.example` holds a placeholder.
+- Exit code 5: the model call failed (no key, network, rate limit or unusable reply). It ends the run before the approval prompt; no retry, no fallback.
+- Gate G7, "the model cannot widen authority": 8 tests with a fake client and real domain processes (`c69ae59`).
+- Live Groq transcripts `traces/v3-0-onboard-model-*.txt` (single runs, not reproducible byte for byte, key absent).
+
+### Changed
+- G6: the credential scan exempts the `.env` path by exact path only, adds a `gsk_` rule, and `scan_model_env_use` allows only `app/` and `onboard.py` to name the key or import the planner.
+- Scope documents (brief, tech stack, architecture, CLAUDE.md, AGENTS.md, ROADMAP) updated together with ADR-0011.
+
+### Stated limits
+- Model output is untrusted and not reproducible; a valid but wrong proposal is caught only at the approval step.
+- Request text leaves the machine for Groq; the prototype uses synthetic data only.
+- Unchanged from 2.0.1; see `docs/final-audit.md` section 7.
+
 ## [2.0.1] - 2026-10-16
 
 Patch release from the final audit. No change to behaviour, status codes or bodies.

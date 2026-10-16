@@ -11,13 +11,13 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
   over from an earlier session fails the demo with `WinError 10048`. Stop it first.
 - If `python` is not on PATH, use `py -3.12`.
 
-## Demo script (about 10 minutes)
+## Demo script (about 13 minutes)
 
 1. **The suite and the syntax check** (1 min).
    `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app`
-   then `python -m unittest discover -s tests -v`. Point at: 388 tests, OK
-   (`traces/final-audit-tests.txt`, `traces/final-audit-compileall.txt`).
-2. **Every scenario** (3 min). `python demo.py` (`traces/final-audit-demo.txt`). Point at:
+   then `python -m unittest discover -s tests -v`. Point at: 446 tests, OK
+   (`traces/v3-0-tests.txt`, `traces/v3-0-compileall.txt`).
+2. **Every scenario** (3 min). `python demo.py` (`traces/v3-0-demo.txt`). Point at:
    - Scenario 1: `status: success  executed 6  refused 0`.
    - Scenario 2: `it grant_admin_access will_not refused`, then
      `status: partial  executed 6  refused 1`. The IT agent refused it, not the
@@ -34,8 +34,19 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
    (`traces/final-audit-onboard.txt`, `traces/v1-2-onboard-declined.txt`).
 5. **A gate live** (1 min). `python -m unittest discover -s tests -p "test_g2_*.py" -v`
    (11 tests: wrong domain, missing token, forged token, replay, both coordinator secrets
-   refused; `traces/final-audit-g2.txt`).
-6. **Optional: the web UI** (1 min). `python -m app.server`, open
+   refused; `traces/v3-0-g2.txt`).
+6. **Model planner, optional** (2 min, needs network and Groq quota; v3.0.0).
+   `python onboard.py --subject review.001@example.test --planner model --request-text "New engineer. Needs an HR record, a laptop, an IT account and a badge."`
+   Point at: the line `planner: model (qwen/qwen3.8-27b), N requests proposed`, the plan
+   the model proposed, then the same `Approve this plan? [y/N]`. The reply varies from run
+   to run. If Groq is down or the limit is hit, the run ends with exit 5 before the prompt,
+   with nothing minted or sent; show the saved runs instead
+   (`traces/v3-0-onboard-model-approved.txt`, `traces/v3-0-onboard-model-injection.txt`,
+   `traces/v3-0-onboard-model-no-key.txt`).
+7. **Gate G7 live** (1 min). `python -m unittest discover -s tests -p "test_g7_*.py" -v`
+   (8 tests, fake model client, no network: hostile model output cannot widen authority;
+   `traces/v3-0-g7.txt`).
+8. **Optional: the web UI** (1 min). `python -m app.server`, open
    `http://127.0.0.1:8110`. Same flow as step 4. Evidence is an HTTP transcript
    (`traces/v2-0-ui-transcript.txt`); there is no browser test.
 
@@ -76,8 +87,23 @@ marker and every domain ledger re-opens replay; that is a stated limit.
 Each ledger is a hash chain, checked on rebuild. It cannot see removed last lines, and
 anyone with write access can add `token_rejected` lines. The auditor prints both limits.
 
-**Where is the agentic part, with no language model?**
-The brief rules out any model. The agency is in the separate processes: three domain
+**What does the model decide? (v3.0.0)**
+Only the list of (domain, action) requests, and only when `--planner model` is chosen.
+Its output is untrusted: it is parsed strictly, then goes through the same registry, plan
+hash, human approval, scoped tokens and domain refusals as any other plan. A hostile
+proposal (`grant_admin_access`, an unknown action, extra fields) is refused at planning or
+stays in the plan with a warning and is refused by the domain (G7, `traces/v3-0-g7.txt`;
+`traces/v3-0-onboard-model-injection.txt` shows one real attempt). Deterministic mode, the
+gates and `demo.py` never use a model.
+
+**What if Groq fails or the limit is hit?**
+The run ends with exit 5 before the approval prompt. There is no retry and no automatic
+fallback, so the plan's origin is never hidden; the user chooses the deterministic planner
+(ADR-0011, `traces/v3-0-onboard-model-bad-model.txt`).
+
+**Where is the agentic part?**
+Two places. With the model planner, a model turns free text into proposed actions. In
+every mode the agency is in the separate processes: three domain
 agents that each declare capabilities, verify their own tokens, refuse on their own
 policy and keep their own ledger, and a coordinator that plans and delegates but holds
 no domain authority.
