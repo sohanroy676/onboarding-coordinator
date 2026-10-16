@@ -26,8 +26,9 @@
 - Rebuild one run from the three ledgers: python -m ledger.reconstruct <run_id>
 
 ## Database and external services
-- None. No database, no cloud services, no API keys.
-- All traffic stays on 127.0.0.1 (ports 8101 HR, 8102 IT, 8103 Facilities; override with OC_PORT_HR, OC_PORT_IT, OC_PORT_FAC).
+- No database. Through v2.0.1: no cloud services and no API keys.
+- v3.0.0 only (ADR-0011): an optional call to the xAI API (`https://api.x.ai/v1`, urllib) when `--planner model` is chosen. The key `XAI_API_KEY` lives in a git-ignored `.env` in the project root, read by `app/` and `onboard.py` only, never by `coordinator/`, `domains/`, `provision.py` or `demo.py`, and never passed to a child process. `.env.example` is tracked with a placeholder.
+- All traffic between the project's own processes stays on 127.0.0.1; the only outbound call is the optional v3.0.0 model call above (ports 8101 HR, 8102 IT, 8103 Facilities; override with OC_PORT_HR, OC_PORT_IT, OC_PORT_FAC).
 - Persistent state is plain files under state/: approval marker files and one JSON Lines ledger per domain.
 
 ## Environment variables

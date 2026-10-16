@@ -1,7 +1,7 @@
 # ADR-0011: An opt-in model planner (scope change)
 
 ## Status
-Proposed (draft for v3.0.0, to start after the faculty review; nothing is implemented)
+Accepted (v3.0.0; implementation starts on feat/model-planner after the faculty review)
 
 ## Date
 2026-10-16
@@ -51,8 +51,27 @@ Add a planner that is chosen per run and defaults to the current one:
 - Evidence: real Grok transcripts are saved as traces, labelled as single runs that are
   not reproducible byte for byte, with the key absent.
 
-Before implementation, check the current xAI API documentation for the endpoint, model
-names, authentication and structured-output support. They are unverified in this draft.
+- A failed model call ends the run with exit code 5, before any approval prompt. The
+  console prints which planner produced the plan.
+
+## xAI API facts (read from docs.x.ai on 2026-10-16, not yet exercised)
+- Base URL `https://api.x.ai/v1`, header `Authorization: Bearer <key>`. The project uses
+  `POST /v1/chat/completions` (the docs list `/v1/completions`, `/v1/complete` as legacy and
+  `/v1/messages` as deprecated; chat/completions carries no such notice). `/v1/responses`
+  also exists and is not used.
+- Structured output: `response_format` = `{"type": "json_schema", "json_schema": {"name":
+  ..., "schema": ..., "strict": true}}`. The docs show it only for `grok-4.7`. The default
+  model is therefore `grok-4.7`, overridable with `--model`. Whether cheaper models
+  (`grok-4.3`, `grok-build-0.1`) accept the schema is unverified; the first real run decides.
+- Schema limits that matter here: `maxItems` up to 256 and `maxLength` up to 2048 are
+  enforced; the plan schema stays far below them.
+- A 429 is reported as "Rate limit exceeded" (`rate_limit_error`). The client does not retry.
+- Not found in the docs, to be confirmed by the first real call: the response field
+  carrying the text (assumed OpenAI-compatible `choices[0].message.content`), the
+  rate-limit numbers, and the exact error body. The parser treats the reply as hostile
+  whether or not the schema was enforced, so schema support is a convenience only.
+- Sources: docs.x.ai/docs/guides/structured-outputs, /docs/models, /docs/api-reference and
+  /developers/rest-api-reference/inference/legacy.
 
 ## Alternatives considered
 - **A model inside each domain agent.** More agentic, but the model would sit next to the
@@ -75,6 +94,8 @@ names, authentication and structured-output support. They are unverified in this
   `CLAUDE.md`, `AGENTS.md` and `ROADMAP.md`.
 - The faculty claim changes from "no model anywhere" to "an optional model proposes the
   actions, and the same deterministic checks and human approval decide what runs".
+- A new exit code, 5, means "the model planner failed"; code 2 still covers a plan the
+  existing planner refuses.
 - Employee data in the request text leaves the machine for xAI. The prototype uses
   synthetic data only, and the docs say so.
 - Model runs cost quota and are not reproducible. Gate results and the exact expected

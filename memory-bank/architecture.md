@@ -46,5 +46,5 @@ The three source folders hold exactly 11 files and no __init__.py (namespace pac
 
 ## Third-party services, APIs and secrets
 - No third-party services or APIs.
-- No .env file and no secret in any file. Secrets exist only in process environment variables created in memory by provision.py.
-- Never hardcode a secret or key. .env is still listed in .gitignore as a guard.
+- No secret in any tracked file. The coordinator secrets exist only in memory in provision.py.
+- v3.0.0 only (ADR-0011): a git-ignored `.env` may hold `XAI_API_KEY`, read by the app layer only for the opt-in model planner. Never hardcode a secret or key.

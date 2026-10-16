@@ -10,7 +10,9 @@ than copying their content here.
 @AGENTS.md
 
 Academic prototype (problem statement PS3, Agentic AI course) for a faculty review.
-There is no language model anywhere in the system.
+Until v3.0.0 there is no language model in the system. v3.0.0 (ADR-0011, accepted) adds an
+opt-in model planner (`--planner model`) that only proposes actions; deterministic mode, the
+gates' expected results and demo.py never use a model.
 
 @memory-bank/projectBrief.md
 
@@ -63,8 +65,10 @@ and `memory-bank/systemPatterns.md` when planning a feature.
   memory in its own process, and no child process or code reads them from the
   environment. Only each domain's derived key (`OC_DOMAIN_KEY`) is passed as an env var.
   Nobody sets any of these by hand. This project
-  does NOT use a `.env` file (it stays in `.gitignore` only as a guard), so ignore the
-  generic ".env" advice in `.clinerules/01-security.md`.
+  does not use a `.env` file for them. The one exception (v3.0.0, ADR-0011): a git-ignored
+  `.env` may hold `XAI_API_KEY` for the model planner, read by `app/` and `onboard.py` only,
+  never by `coordinator/`, `domains/`, `provision.py` or `demo.py`, never in a child env,
+  never printed or traced. Ignore the other generic ".env" advice in `.clinerules/01-security.md`.
 - The coordinator never holds a domain credential. Never log secrets or tokens.
 - Before every commit, scan the diff for anything that looks like a secret.
 - Validate external input on any path that touches a shell command or file path.
