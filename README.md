@@ -89,7 +89,13 @@ On the page:
 1. Under **Domains**, start HR, IT and Facilities. A plan needs all three running.
 2. Under **New onboarding**, enter the new hire's subject and the requests, one
    `domain:action` per line. The default requests are the six supported actions.
-3. **Make plan** shows the steps and any warnings, and the plan hash.
+   Optional (v3.1.0): set **Planner** to `model`, enter free text, and the model proposes
+   the requests instead. It needs `GROQ_API_KEY` in the git-ignored `.env` (see
+   `.env.example`), sends only the text and the offered action names to Groq, and the
+   key never reaches the browser. If the model call fails you get an error and no plan;
+   there is no fallback. Use synthetic data only.
+3. **Make plan** shows the steps and any warnings, the planner that produced the plan,
+   and the plan hash.
 4. **Approve and run this plan** signs that exact hash and runs it. A plan can be approved
    only once and expires after 5 minutes.
 5. The run view shows each action's outcome, and the rebuild of each domain's ledger.

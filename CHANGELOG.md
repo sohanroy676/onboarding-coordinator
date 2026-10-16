@@ -5,6 +5,19 @@ Format follows Keep a Changelog. Generated from Conventional Commits — regener
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-16
+
+Web UI planner selector. Minor release; the model planner of 3.0.0 is now also available on the local page (ADR-0011 amendment).
+
+### Added
+- `POST /api/plans` takes `planner` (`deterministic` default, or `model`) and `request_text`; the response names the planner. A failed model call returns 502 `model_failed`, stores no plan and does not fall back.
+- Planner selector and request-text box on the page, with a note that the text leaves the machine.
+- `app.onboarding.propose_requests`: the non-printing core shared by the console and the UI.
+- 17 UI tests with a fake client (no network) and `tests/ui_model_transcript.py`, which saved `traces/v3-1-ui-model-transcript.txt` from one real run.
+
+### Stated limits
+- Unchanged from 3.0.0. The key is read in `app/` only and never sent to the browser.
+
 ## [3.0.0] - 2026-10-16
 
 Opt-in model planner on the CLI. Major release: it reverses the "no language model" scope for this version only (ADR-0011). Deterministic mode, the gates' expected results and `demo.py` never use a model. The web UI selector is not part of this release.
