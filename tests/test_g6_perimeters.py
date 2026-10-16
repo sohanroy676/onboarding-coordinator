@@ -31,6 +31,7 @@ from tests.perimeter_scan import (
     changed_paths,
     scan_coordinator_env,
     scan_imports,
+    scan_model_env_use,
     scan_secrets,
     scan_writes,
     snapshot,
@@ -80,6 +81,29 @@ class StaticCredentialScan(unittest.TestCase):
 
     def test_coordinator_has_no_domain_key_or_env_read(self):
         self.assertEqual(scan_coordinator_env(ROOT), [])
+
+
+class ModelKeyPerimeter(unittest.TestCase):
+    """ADR-0011: the model key stays in .env and in app/ and onboard.py."""
+
+    def test_no_key_shaped_value_outside_the_exempt_env_file(self):
+        self.assertEqual([f for f in scan_secrets(ROOT) if f.rule == "groq api key"], [])
+
+    def test_only_the_app_layer_names_the_key_or_imports_the_planner(self):
+        self.assertEqual(scan_model_env_use(ROOT), [])
+
+    def test_planted_key_and_planted_reader_are_flagged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "coordinator").mkdir()
+            (root / "coordinator" / "bad.py").write_text(
+                'KEY = "GROQ_API_KEY"\n', encoding="ascii")
+            (root / "notes.txt").write_text("gsk_" + "B" * 30 + "\n", encoding="ascii")
+            (root / ".env").write_text("GROQ_API_KEY=gsk_" + "B" * 30 + "\n",
+                                       encoding="ascii")
+            self.assertEqual([f.path for f in scan_secrets(root)], ["notes.txt"])
+            self.assertEqual([f.path for f in scan_model_env_use(root)],
+                             ["coordinator/bad.py"])
 
 
 class StaticImportScan(unittest.TestCase):

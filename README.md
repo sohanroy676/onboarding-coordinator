@@ -122,6 +122,19 @@ Exit codes:
 | 2 | bad subject or request, or the plan was refused before the prompt |
 | 3 | not approved |
 | 4 | the domains did not start or did not give a valid declaration |
+| 5 | the model planner failed (see below); nothing was approved, minted or sent |
+
+### Opt-in model planner (v3.0)
+
+```
+python onboard.py --subject new.hire@example.test --planner model --request-text "needs a laptop and a badge"
+```
+
+Copy `.env.example` to `.env` and put your Groq key (`GROQ_API_KEY=gsk_...`) in it (`.env` is git-ignored; only
+`app/` reads it). The model only proposes actions; the same plan, hash, console approval,
+scoped tokens and domain refusals decide what runs. A failure never falls back silently
+and never retries. The request text leaves the machine, so use synthetic data only.
+`--model` picks the Groq model (default `qwen/qwen3.8-27b`). The default planner is unchanged.
 
 Every run ends with the rebuild from the three ledgers and the run id. See
 `docs/troubleshooting.md` for the causes of each code.

@@ -115,6 +115,20 @@ The exchange secret and the approval secret are held in `provision.py`'s process
 memory, not in an environment variable. That process is also the coordinator in
 `demo.py`, which is why the exchange secret can derive every domain key (ADR-0007).
 
+## Model planner (v3.0, opt-in)
+
+`python onboard.py --subject <id> --planner model --request-text "..."` asks the model for
+a list of (domain, action) requests (`app/model_planner.py`, ADR-0011). The reply is
+untrusted: it is limited to 4096 characters, parsed as JSON with exactly the key
+`requests`, 1 to 12 items, each with exactly `domain` and `action`. Each pair then goes
+through the same `parse_request`, `build_plan`, plan hash, console approval, scoped
+tokens and domain refusals as a typed request. The model never sets params or the
+subject. A failed call, a missing key or an unusable reply ends the run with exit 5 before
+the prompt: no retry, no fallback, nothing minted or sent. The key `GROQ_API_KEY` is read
+from a git-ignored `.env` by `app/` only, passed to the client as an argument, and never
+printed or put in a child environment. Deterministic mode, `demo.py` and G1 to G6 expected
+results never use a model.
+
 ## Design decisions
 
 The main decisions are recorded as ADRs:

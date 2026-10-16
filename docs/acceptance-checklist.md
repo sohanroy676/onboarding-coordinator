@@ -214,3 +214,42 @@ The full audit is `docs/final-audit.md`. Its traces are from real runs of the au
 | Demo: partial 6/1, aborted replay, multiple 3.0 from 15 and 5 | `python demo.py` | `traces/final-audit-demo.txt` |
 | One run rebuilds hr 2, it 2, facilities 2 | `python -m ledger.reconstruct <run_id>` | `traces/final-audit-reconstruct.txt`, `traces/final-audit-reconstruct-partial.txt` |
 | No credential value in `coordinator/` | `git grep` (value pattern, zero matches) | `traces/final-audit-coordinator-grep.txt` |
+
+## v3.0 Opt-in model planner (ADR-0011)
+
+`python onboard.py --subject <id> --planner model --request-text "..."`. The model only
+proposes actions; the registry, planner, plan hash, console approval, scoped tokens and
+domain refusals decide what runs. Every test below uses a fake client or an injected
+transport, so no result depends on a live model or on the network. Real Groq transcripts
+are separate, single, non-reproducible runs (rows below; the trace headers say so).
+
+| Requirement | Test | Trace |
+| --- | --- | --- |
+| G7: an action outside the registry is refused at planning, nothing is started or minted | `test_g7_model_authority.ModelAuthorityGate.test_action_outside_the_registry_is_refused_at_planning` | `traces/v3-0-g7.txt` |
+| G7: `grant_admin_access` stays in the plan with a warning and IT refuses it (it executed 1, refused 1, chains ok) | `test_g7_model_authority.ModelAuthorityGate.test_grant_admin_access_stays_in_the_plan_and_the_domain_refuses_it` | `traces/v3-0-g7.txt` |
+| G7: malformed JSON, 13 items, oversized text, and extra fields (params, scope, subject) end the run before the prompt (exit 5) | `test_g7_model_authority.ModelAuthorityGate.test_malformed_json_ends_the_run_before_approval`, `test_g7_model_authority.ModelAuthorityGate.test_oversized_or_too_long_proposals_end_the_run_before_approval`, `test_g7_model_authority.ModelAuthorityGate.test_extra_fields_cannot_carry_params_scope_or_a_subject` | `traces/v3-0-g7.txt` |
+| G7: the plan subject and plan hash come from the flow, not the model | `test_g7_model_authority.ModelAuthorityGate.test_the_plan_subject_and_hash_come_from_the_flow_not_the_model` | `traces/v3-0-g7.txt` |
+| G7: a declined model plan and a failing client (429, network, timeout) mint and send nothing, with one call and no fallback | `test_g7_model_authority.ModelAuthorityGate.test_declining_the_model_plan_mints_and_sends_nothing`, `test_g7_model_authority.ModelAuthorityGate.test_client_failures_end_the_run_without_retry_or_fallback` | `traces/v3-0-g7.txt` |
+| The key is read from `.env` by a strict parser and never appears in an error | `test_unit_model_planner.ReadKeyTests` | `traces/v3-0-g7.txt` |
+| The client sends one request with a Bearer header, never retries, and maps 429, other statuses and transport errors to a named error | `test_unit_model_planner.ClientTests` | `traces/v3-0-g7.txt` |
+| Deterministic mode never reads `.env` or builds a client | `test_unit_app_model.PlannerOptionRules.test_deterministic_mode_never_reads_the_env_file_or_builds_a_client` | `traces/v3-0-demo.txt` |
+| A missing key ends with exit 5 before any domain starts | `test_unit_app_model.ModelFlow.test_missing_key_ends_before_any_domain_starts` | `traces/v3-0-onboard-model-no-key.txt` |
+| G6: a key-shaped value is flagged everywhere except the exact path `.env`; only `app/` and `onboard.py` name the key or import the planner | `test_g6_perimeters.ModelKeyPerimeter` | `traces/v3-0-g6.txt` |
+| G6: the key in the parent environment never reaches a child | `test_unit_provision.ChildEnvTests.test_model_key_in_the_parent_environment_never_reaches_a_child` | `traces/v3-0-g6.txt` |
+| Gates after v3.0: G1 16, G2 11, G3 10, G4 7, G5 7, G6 14, G7 8 | `test_g1_domains_registry.py` to `test_g7_model_authority.py` | `traces/v3-0-g1.txt` to `traces/v3-0-g7.txt` |
+| Full suite after v3.0: Ran 446 tests, OK; syntax check clean | `python -m unittest discover -s tests -v` | `traces/v3-0-tests.txt` |
+| Live Groq run, approved: 4 requests proposed by `qwen/qwen3.8-27b`, plan, `y`, success 4/0, rebuilt hr 1, it 2, facilities 1 | `python onboard.py --subject <id> --planner model --request-text "..."` | `traces/v3-0-onboard-model-approved.txt` |
+| Live Groq run, declined: exit 3, nothing approved, minted or sent | same command, answer `n` | `traces/v3-0-onboard-model-declined.txt` |
+| Live Groq run asking for admin access: the model proposed only supported actions (2), success 2/0 | same command | `traces/v3-0-onboard-model-admin.txt` |
+| Live Groq run with a second model (`--model openai/gpt-oss-20b`): 2 valid requests, declined, exit 3 | same command with `--model` | `traces/v3-0-onboard-model-second-model.txt` |
+| Live Groq run with a model that does not exist: exit 5 before the prompt, Groq's HTTP 404 text shown, nothing approved, minted or sent | same command with `--model no/such-model` | `traces/v3-0-onboard-model-bad-model.txt` |
+| Live Groq run with injection-style text: the model proposed only `it:assign_laptop`; this is one run of model behaviour, the guarantee is G7 | same command | `traces/v3-0-onboard-model-injection.txt` |
+| Full suite on Python 3.12.3: Ran 446 tests, OK | `py -3.12 -m unittest discover -s tests -v` | `traces/v3-0-tests-py312.txt` |
+| Demo unchanged: success 6/0, partial 6/1, aborted replay, multiple 3.0 from 15 and 5 | `python demo.py` | `traces/v3-0-demo.txt` |
+
+Stated limits for v3.0: a model can propose a plan that is valid but wrong for the new
+hire (for example a missing action); the human approval is where that is caught. The
+request text leaves the machine for Groq, so only synthetic data is used. The live Groq
+transcripts are single runs and are not byte-for-byte reproducible. In the admin one the model
+never proposed grant_admin_access (it is offered only the supported actions), so it shows no
+refusal; the refusal is proven by G7 with a fake client.

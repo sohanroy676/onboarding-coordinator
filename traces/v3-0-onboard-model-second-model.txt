@@ -1,0 +1,9 @@
+# Single live run on 2026-10-16 against Groq. Not reproducible byte for byte. The API key is not in this file.
+# command: echo n | python onboard.py --subject new.hire@example.test --planner model --model openai/gpt-oss-20b --request-text Needs a laptop and a desk.
+planner: model (openai/gpt-oss-20b), 2 requests proposed
+plan for new.hire@example.test
+  it          assign_laptop      supported      {}
+  facilities  assign_desk        supported      {}
+Approve this plan? [y/N] not approved: nothing was approved, minted or sent
+all domains stopped
+onboard exit 3

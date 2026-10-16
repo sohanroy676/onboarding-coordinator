@@ -9,6 +9,7 @@ from tests.perimeter_scan import (
     FIXTURE_SECRETS,
     changed_paths,
     scan_imports,
+    scan_model_env_use,
     scan_secrets,
     snapshot,
     write_sites,
@@ -167,6 +168,68 @@ class AppImportRules(unittest.TestCase):
                 "import provision\n"
                 "import demo\n")
         self.assertEqual(self.findings_for(text), [])
+
+
+def planted_key():
+    """A key-shaped value built at run time, so no project file holds one."""
+    return "gsk_" + "A" * 30
+
+
+class EnvFileRules(unittest.TestCase):
+    """ADR-0011: the key may sit in .env only, by exact path."""
+
+    def rules_in(self, files):
+        tmp, root = write_tree(files)
+        self.addCleanup(tmp.cleanup)
+        return sorted((f.path, f.rule) for f in scan_secrets(root))
+
+    def test_key_in_the_exempt_env_file_is_not_flagged(self):
+        self.assertEqual(self.rules_in({".env": "GROQ_API_KEY=%s\n" % planted_key()}), [])
+
+    def test_same_key_in_other_files_is_flagged(self):
+        files = {
+            ".env.local": "GROQ_API_KEY=%s\n" % planted_key(),
+            "notes.txt": "key %s\n" % planted_key(),
+            "x.env": "GROQ_API_KEY=%s\n" % planted_key(),
+            "sub/.env": "GROQ_API_KEY=%s\n" % planted_key(),
+            "a.md": "see %s\n" % planted_key(),
+        }
+        found = {path for path, _rule in self.rules_in(files)}
+        self.assertEqual(found, {".env.local", "notes.txt", "sub/.env", "a.md"})
+
+    def test_env_example_is_scanned_and_a_placeholder_passes(self):
+        self.assertEqual(self.rules_in({".env.example": "GROQ_API_KEY=replace-me\n"}), [])
+        flagged = self.rules_in({".env.example": "GROQ_API_KEY=%s\n" % planted_key()})
+        self.assertEqual([path for path, _rule in flagged], [".env.example"])
+
+    def test_short_gsk_prefix_is_not_a_key(self):
+        self.assertEqual(self.rules_in({"a.md": "the gsk_planner is optional\n"}), [])
+
+
+class ModelEnvUseRules(unittest.TestCase):
+    def findings_for(self, files):
+        tmp, root = write_tree(files)
+        self.addCleanup(tmp.cleanup)
+        for folder in ("domains", "coordinator", "ledger", "app"):
+            (root / folder).mkdir(exist_ok=True)
+        return sorted((f.path, f.rule) for f in scan_model_env_use(root))
+
+    def test_key_name_or_env_path_in_coordinator_is_flagged(self):
+        files = {"coordinator/a.py": 'NAME = "GROQ_API_KEY"\n',
+                 "domains/b.py": 'PATH = ".env"\n',
+                 "provision.py": "GROQ_API_KEY = 1\n"}
+        found = {path for path, _rule in self.findings_for(files)}
+        self.assertEqual(found, {"coordinator/a.py", "domains/b.py", "provision.py"})
+
+    def test_importing_app_from_outside_is_flagged(self):
+        found = self.findings_for({"coordinator/a.py": "from app import model_planner\n",
+                                   "demo.py": "import app.model_planner\n"})
+        self.assertEqual([path for path, _rule in found], ["coordinator/a.py", "demo.py"])
+
+    def test_app_and_onboard_may_use_both(self):
+        files = {"app/m.py": 'NAME = "GROQ_API_KEY"\nPATH = ".env"\n',
+                 "onboard.py": "from app.model_planner import read_key\n"}
+        self.assertEqual(self.findings_for(files), [])
 
 
 if __name__ == "__main__":
