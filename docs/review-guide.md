@@ -15,8 +15,9 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
 
 1. **The suite and the syntax check** (1 min).
    `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app`
-   then `python -m unittest discover -s tests -v`. Point at: 446 tests, OK
-   (`traces/v3-0-tests.txt`, `traces/v3-0-compileall.txt`).
+   then `python -m unittest discover -s tests -v`. Point at: 469 tests, OK
+   (`traces/v3-1-0-archive-tests.txt`, which also shows compileall exit 0 and gates G1
+   to G7 on the v3.1.0 archive).
 2. **Every scenario** (3 min). `python demo.py` (`traces/v3-0-demo.txt`). Point at:
    - Scenario 1: `status: success  executed 6  refused 0`.
    - Scenario 2: `it grant_admin_access will_not refused`, then
@@ -53,7 +54,10 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
    `traces/v3-0-g7.txt`).
 8. **Optional: the web UI** (1 min). `python -m app.server`, open
    `http://127.0.0.1:8110`. Same flow as step 4. Evidence is an HTTP transcript
-   (`traces/v2-0-ui-transcript.txt`); there is no browser test.
+   (`traces/v2-0-ui-transcript.txt`); there is no browser test. Since v3.1.0 the page has
+   a Planner selector: choose `model`, enter the request text and make the plan. Real run
+   through the UI: `traces/v3-1-ui-model-transcript.txt` (steps 11 and 12 show the admin
+   request refused by the IT agent).
 
 ## Likely questions
 
