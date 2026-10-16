@@ -176,6 +176,17 @@ No prompt is shown for either form of exit 2.
   its declaration. The run stops before any prompt.
 - `<domain>: HTTP <code>` or an invalid declaration: the domain answered with something the registry refuses.
 
+### Exit 5: `model planner failed: ...`
+
+- `no .env file; copy .env.example to .env and set XAI_API_KEY`: `--planner model` needs a `.env` file
+  in the project root with `XAI_API_KEY=<your key>`. The file is git-ignored; never commit it. The saved
+  trace `traces/v3-0-onboard-model-no-key.txt` shows this with exit code 5. No domain was started.
+- `rate limit exceeded (HTTP 429)`, `HTTP <code>`, or `model call failed: <ErrorName>`: the call was
+  refused or did not complete. Nothing is retried and nothing falls back to the deterministic planner.
+  Run again later, or choose `--planner deterministic` yourself.
+- `model proposal ...` or `model proposed an unusable request`: the reply did not match the strict
+  shape. Nothing was approved, minted or sent. Rephrase the request text and run again.
+
 ### Exit 1 after approval: `interrupted after approval`
 
 - Ctrl-C after the answer `y` stops the coordinator while domains may be partly done. Rebuild the run with the

@@ -1,0 +1,14 @@
+test_action_outside_the_registry_is_refused_at_planning (test_g7_model_authority.ModelAuthorityGate.test_action_outside_the_registry_is_refused_at_planning) ... ok
+test_client_failures_end_the_run_without_retry_or_fallback (test_g7_model_authority.ModelAuthorityGate.test_client_failures_end_the_run_without_retry_or_fallback) ... ok
+test_declining_the_model_plan_mints_and_sends_nothing (test_g7_model_authority.ModelAuthorityGate.test_declining_the_model_plan_mints_and_sends_nothing) ... ok
+test_extra_fields_cannot_carry_params_scope_or_a_subject (test_g7_model_authority.ModelAuthorityGate.test_extra_fields_cannot_carry_params_scope_or_a_subject) ... ok
+test_grant_admin_access_stays_in_the_plan_and_the_domain_refuses_it (test_g7_model_authority.ModelAuthorityGate.test_grant_admin_access_stays_in_the_plan_and_the_domain_refuses_it) ... ok
+test_malformed_json_ends_the_run_before_approval (test_g7_model_authority.ModelAuthorityGate.test_malformed_json_ends_the_run_before_approval) ... ok
+test_oversized_or_too_long_proposals_end_the_run_before_approval (test_g7_model_authority.ModelAuthorityGate.test_oversized_or_too_long_proposals_end_the_run_before_approval) ... ok
+test_the_plan_subject_and_hash_come_from_the_flow_not_the_model (test_g7_model_authority.ModelAuthorityGate.test_the_plan_subject_and_hash_come_from_the_flow_not_the_model) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 10.536s
+
+OK
+gate g7 exit 0

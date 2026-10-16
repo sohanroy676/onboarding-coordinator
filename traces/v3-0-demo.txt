@@ -1,0 +1,55 @@
+
+== scenario 1: clean run
+run id: c454651c4db98651
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+hr          enroll_benefits    supported      executed   -
+it          create_account     supported      executed   -
+it          assign_laptop      supported      executed   -
+facilities  issue_badge        supported      executed   -
+facilities  assign_desk        supported      executed   -
+status: success  executed 6  refused 0  not_executed 0
+exchanges so far: 3
+
+== scenario 2: grant_admin_access run
+run id: 92a0663c4b419956
+domain      action             classification outcome    reason
+hr          create_record      supported      executed   -
+hr          enroll_benefits    supported      executed   -
+it          create_account     supported      executed   -
+it          assign_laptop      supported      executed   -
+it          grant_admin_access will_not       refused    will_not
+facilities  issue_badge        supported      executed   -
+facilities  assign_desk        supported      executed   -
+status: partial  executed 6  refused 1  not_executed 0
+exchanges so far: 6
+warning: it: grant_admin_access is on the domain's will_not list; the domain will refuse it, and the plan keeps it
+
+== scenario 3: replay of the scenario 2 approval
+run id: 55bd7bfd579a2b1f
+status: aborted (approval_already_consumed)
+exchanges so far: 6
+
+== scenario 4: five clean runs, coordination multiple
+run 1: run id 4a962e1cd5a9a94a  status success  exchanges so far 3
+run 2: run id b8607f32e9869476  status success  exchanges so far 6
+run 3: run id fb1c05d1a57b8de0  status success  exchanges so far 9
+run 4: run id b11671826837b0cc  status success  exchanges so far 12
+run 5: run id 270f0951d44c8fd9  status success  exchanges so far 15
+coordination multiple: 3.0  (15 exchanges / 5 runs / 1 monolith authorization)
+
+== scenario 1 rebuilt from the domain ledgers
+run id: c454651c4db98651
+domain      executed  refused  failed  token_rejected  chain
+hr          2         0        0       0               ok
+it          2         0        0       0               ok
+facilities  2         0        0       0               ok
+total: executed 6  refused 0  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+
+all domains stopped
+demo exit 0

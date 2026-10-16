@@ -1,0 +1,2 @@
+model planner failed: no .env file; copy .env.example to .env and set XAI_API_KEY
+onboard exit 5
