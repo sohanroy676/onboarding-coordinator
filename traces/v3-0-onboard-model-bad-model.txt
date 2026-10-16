@@ -1,0 +1,6 @@
+# Single live run on 2026-10-16 against Groq. Not reproducible byte for byte. The API key is not in this file.
+# command: echo n | python onboard.py --subject new.hire@example.test --planner model --model no/such-model --request-text Needs a laptop.
+model planner failed: model call failed: HTTP 404: The model `no/such-model` does not exist or you do not have access to it.
+nothing was approved, minted or sent
+all domains stopped
+onboard exit 5

@@ -241,6 +241,10 @@ are separate, single, non-reproducible runs (rows below; the trace headers say s
 | Live Groq run, approved: 4 requests proposed by `qwen/qwen3.8-27b`, plan, `y`, success 4/0, rebuilt hr 1, it 2, facilities 1 | `python onboard.py --subject <id> --planner model --request-text "..."` | `traces/v3-0-onboard-model-approved.txt` |
 | Live Groq run, declined: exit 3, nothing approved, minted or sent | same command, answer `n` | `traces/v3-0-onboard-model-declined.txt` |
 | Live Groq run asking for admin access: the model proposed only supported actions (2), success 2/0 | same command | `traces/v3-0-onboard-model-admin.txt` |
+| Live Groq run with a second model (`--model openai/gpt-oss-20b`): 2 valid requests, declined, exit 3 | same command with `--model` | `traces/v3-0-onboard-model-second-model.txt` |
+| Live Groq run with a model that does not exist: exit 5 before the prompt, Groq's HTTP 404 text shown, nothing approved, minted or sent | same command with `--model no/such-model` | `traces/v3-0-onboard-model-bad-model.txt` |
+| Live Groq run with injection-style text: the model proposed only `it:assign_laptop`; this is one run of model behaviour, the guarantee is G7 | same command | `traces/v3-0-onboard-model-injection.txt` |
+| Full suite on Python 3.12.3: Ran 446 tests, OK | `py -3.12 -m unittest discover -s tests -v` | `traces/v3-0-tests-py312.txt` |
 | Demo unchanged: success 6/0, partial 6/1, aborted replay, multiple 3.0 from 15 and 5 | `python demo.py` | `traces/v3-0-demo.txt` |
 
 Stated limits for v3.0: a model can propose a plan that is valid but wrong for the new
