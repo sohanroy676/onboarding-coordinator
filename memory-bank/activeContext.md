@@ -1,6 +1,7 @@
 # Active Context
 
 ## Current focus
+v2.0.1 is prepared on docs/v2-0-1-release (changelog, review guide, roadmap; suite 392 OK). CI on main is green for 637b40a. Next step: user approves merge, push and the v2.0.1 tag; then rebuild the archive from the tag. Faculty prep is in docs/review-guide.md.
 Final audit is done and merged to main at 3d4140e, pushed to origin (see docs/final-audit.md). No tag yet: v2.0.1 is undecided because the HTTP fix changes code after v2.0.0. CI result for 3d4140e was not checked (gh is not installed; look at the Actions page). Next step: decide on the v2.0.1 tag, then prepare the faculty review.
 v2.0.0 (local web UI) is released: merged to main at e1d262d, tag v2.0.0 pushed, CI green on main and on the tag. Suite 385 OK, gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11. ADR-0010 accepted. Archive rebuilt from the tag (see the checklist, D1). Nothing is planned after it; see ROADMAP.
 v1.2.0 (CLI and onboarding core) is released: merged to main at 4005885, tag v1.2.0 pushed, CI green, release checks passed (clone and extracted archive: 324 tests OK, gates OK; demo exit 0). Release traces traces/v1-2-release-*.txt. Next: v2.0.0 (local web UI, ADR-0010 draft, not started). Pending housekeeping on branch docs/v1-2-release-record: these memory-bank updates.

@@ -1,9 +1,10 @@
 # Roadmap
 
 ## Now
-- v2.0.0 is released (tag v2.0.0 at e1d262d, pushed). Nothing is planned after it; see Later / ideas.
+- v2.0.1 (patch: the Windows reset fix from the final audit, changelog, review guide) is prepared on docs/v2-0-1-release; not merged or tagged yet. v2.0.0 is released (tag v2.0.0 at e1d262d, pushed). Nothing else is planned; see Later / ideas.
 
 ## Done
+- v2.0.1 Final audit patch: refused POSTs answered without a connection reset on Windows (`app/server.py`, `domains/domain_agent.py`), G1 test for the 0.1 s / 0.01 s stale case, `docs/final-audit.md`, `docs/review-guide.md`. Suite 388 plus the review-guide docs tests.
 - v2.0 Local web UI (major): `python -m app.server` on 127.0.0.1, port 8110. Plan, approve (the plan hash the user saw), run, and per-domain rebuild, over the same flow as the CLI. Tests `tests/test_unit_app_server.py`; transcript `traces/v2-0-ui-transcript.txt`; ADR-0010 accepted. Suite 385 OK, gates unchanged. Merged at e1d262d, tag v2.0.0, CI green on main and the tag.
 - v1.2 Onboarding core and CLI: `python onboard.py --subject <id>` runs the one flow in `app/onboarding.py` (validate, plan, console approval per ADR-0009, run, rebuild). Exit codes 0 to 4. Tests `tests/test_unit_app_onboarding.py` and `tests/test_unit_app_live.py`; traces `traces/v1-2-*.txt`. No new gate; the six gates are unchanged. Checklist section v1.2.
 - v1.1 Known-gap fixes: five gaps closed on main (1f6ac88), 279 tests, gates G1 15, G2 11, G3 10, G4 7, G5 7, G6 11, traces traces/v1-1-*.txt. Fixed: write scan missed Path.open with a non-literal mode; provisioner gave no detail for a silent child; a clock moved backwards was treated as fresh; the exchange counter reset on restart; a deleted consumed approval marker re-opened replay at the domains (approval_id is now a token claim, ADR-0003, ADR-0004, ADR-0006). Token format changed, so this is a minor release. Stated limits stay as in the checklist "Stated limits" section (ADR-0004, ADR-0006, ADR-0007, ADR-0008).
