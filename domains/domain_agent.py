@@ -321,6 +321,13 @@ def _make_handler(agent):
                     break
                 remaining -= len(chunk)
 
+        def _drain_declared(self):
+            """Discard the body of a POST we refuse before reading it."""
+            try:
+                self._drain(int(self.headers.get("Content-Length", "")))
+            except ValueError:
+                pass
+
         def do_GET(self):
             if self.path == "/capabilities":
                 self._send(200, agent.capabilities())
@@ -331,9 +338,11 @@ def _make_handler(agent):
 
         def do_POST(self):
             if self.path == "/capabilities":
+                self._drain_declared()
                 self._send(405, {"error": "method_not_allowed"})
                 return
             if self.path != "/execute":
+                self._drain_declared()
                 self._send(404, {"error": "not_found"})
                 return
             try:

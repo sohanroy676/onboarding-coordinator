@@ -1,0 +1,12 @@
+run id: c7ff95a8572426ff
+domain      executed  refused  failed  token_rejected  chain
+hr          2         0        0       0               ok
+it          2         0        0       0               ok
+facilities  2         0        0       0               ok
+total: executed 6  refused 0  failed 0  token_rejected 0
+limits: end-of-file truncation is not detectable; the hash chain cannot see removed last lines
+limits: a deleted consumed-approval marker re-opens replay; markers are not in any ledger
+limits: an aborted run (approval refused) leaves no ledger line
+limits: a not_executed action (domain unreachable or bad answer) leaves no ledger line
+limits: token_rejected lines can be added by anyone with write access to a ledger file
+exit 0

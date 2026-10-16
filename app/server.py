@@ -18,6 +18,7 @@ import dataclasses
 import json
 import re
 import secrets
+import socket
 import socketserver
 import threading
 import time
@@ -38,6 +39,7 @@ from provision import ProvisionError
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8110
 MAX_BODY_BYTES = 16 * 1024
+LINGER_SECONDS = 0.5
 PENDING_TTL_SECONDS = 300
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 CSRF_PLACEHOLDER = b"{{CSRF_TOKEN}}"
@@ -219,6 +221,7 @@ def _domain_view(evidence):
 class UiHandler(BaseHTTPRequestHandler):
     server_version = "OnboardingUI"
     sys_version = ""
+    timeout = 10
 
     def log_message(self, format, *args):
         """Quiet: the transcript script and the tests read the responses."""
@@ -316,6 +319,27 @@ class UiHandler(BaseHTTPRequestHandler):
         if not isinstance(body, dict):
             raise UiError(400, "bad_json", "the body must be a JSON object")
         return body
+
+    def finish(self):
+        """Let the client read the reply before the socket closes.
+
+        A refused POST can leave request bytes unread. On Windows, closing
+        with unread bytes sends a TCP reset and the client can lose the
+        reply, so stop sending, then read what is left (bounded) first.
+        """
+        try:
+            self.wfile.flush()
+            self.connection.shutdown(socket.SHUT_WR)
+            self.connection.settimeout(LINGER_SECONDS)
+            left = MAX_BODY_BYTES * 2
+            while left > 0:
+                chunk = self.connection.recv(4096)
+                if not chunk:
+                    break
+                left -= len(chunk)
+        except OSError:
+            pass
+        super().finish()
 
     def _send_static(self, path):
         name, content_type = STATIC_ROUTES[path]

@@ -286,6 +286,13 @@ class HttpEdgeTests(DomainServerCase):
         self.assertEqual(call(self.port, "GET", "/execute")[0], 405)
         self.assertEqual(call(self.port, "POST", "/capabilities", body={})[0], 405)
 
+    def test_refused_post_with_a_body_is_always_answered(self):
+        # An unread body used to let a Windows close reset the connection.
+        for attempt in range(40):
+            for path, expected in (("/nope", 404), ("/capabilities", 405)):
+                status = call(self.port, "POST", path, body={"x": "y" * 3000})[0]
+                self.assertEqual(status, expected, (path, attempt))
+
 
 if __name__ == "__main__":
     unittest.main()
