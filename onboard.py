@@ -34,7 +34,7 @@ def main(argv=None):
     parser.add_argument("--request-text", metavar="TEXT",
                         help="free text for the model planner; it only proposes actions")
     parser.add_argument("--model", default=DEFAULT_MODEL,
-                        help="xAI model name for --planner model (default %(default)s)")
+                        help="Groq model name for --planner model (default %(default)s)")
     args = parser.parse_args(argv)
     return run_onboarding(args.subject, args.request, planner=args.planner,
                           request_text=args.request_text, model=args.model)

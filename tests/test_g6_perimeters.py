@@ -87,7 +87,7 @@ class ModelKeyPerimeter(unittest.TestCase):
     """ADR-0011: the model key stays in .env and in app/ and onboard.py."""
 
     def test_no_key_shaped_value_outside_the_exempt_env_file(self):
-        self.assertEqual([f for f in scan_secrets(ROOT) if f.rule == "xai api key"], [])
+        self.assertEqual([f for f in scan_secrets(ROOT) if f.rule == "groq api key"], [])
 
     def test_only_the_app_layer_names_the_key_or_imports_the_planner(self):
         self.assertEqual(scan_model_env_use(ROOT), [])
@@ -97,9 +97,9 @@ class ModelKeyPerimeter(unittest.TestCase):
             root = Path(tmp)
             (root / "coordinator").mkdir()
             (root / "coordinator" / "bad.py").write_text(
-                'KEY = "XAI_API_KEY"\n', encoding="ascii")
-            (root / "notes.txt").write_text("xai-" + "B" * 30 + "\n", encoding="ascii")
-            (root / ".env").write_text("XAI_API_KEY=xai-" + "B" * 30 + "\n",
+                'KEY = "GROQ_API_KEY"\n', encoding="ascii")
+            (root / "notes.txt").write_text("gsk_" + "B" * 30 + "\n", encoding="ascii")
+            (root / ".env").write_text("GROQ_API_KEY=gsk_" + "B" * 30 + "\n",
                                        encoding="ascii")
             self.assertEqual([f.path for f in scan_secrets(root)], ["notes.txt"])
             self.assertEqual([f.path for f in scan_model_env_use(root)],

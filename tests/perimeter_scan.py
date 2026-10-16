@@ -22,7 +22,7 @@ SKIP_DIRS = frozenset({"state", ".git", "__pycache__"})
 ENV_EXEMPT = ".env"
 ENV_FILE_PREFIX = ".env"
 # Only these may name the key or the .env file or import the model planner.
-MODEL_ENV_NAMES = frozenset({".env", "XAI_API_KEY"})
+MODEL_ENV_NAMES = frozenset({".env", "GROQ_API_KEY"})
 MODEL_PLANNER_USERS = frozenset({"onboard.py"})
 
 Finding = namedtuple("Finding", "path line rule")
@@ -45,8 +45,8 @@ SECRET_RULES = (
      re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
     ("cloud access key",
      re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
-    ("xai api key",
-     re.compile(r"\bxai-[A-Za-z0-9]{20,}")),
+    ("groq api key",
+     re.compile(r"\bgsk_[A-Za-z0-9]{20,}")),
     ("token-shaped string",
      re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}")),
 )
@@ -262,7 +262,7 @@ def scan_model_env_use(root=ROOT):
         for node in ast.walk(_parse(path)):
             if isinstance(node, ast.Constant) and node.value in MODEL_ENV_NAMES:
                 findings.append(Finding(rel, node.lineno, "model key or .env name"))
-            if isinstance(node, ast.Name) and node.id == "XAI_API_KEY":
+            if isinstance(node, ast.Name) and node.id == "GROQ_API_KEY":
                 findings.append(Finding(rel, node.lineno, "model key name"))
         for module in imported_modules(path):
             if _is_module_or_inside(module, "app"):

@@ -134,13 +134,13 @@ class ModelFlow(OnboardingCase):
 
     def test_key_from_env_file_builds_the_client_without_printing_it(self):
         env = self.state_dir / "model.env"
-        env.write_text("XAI_API_KEY=unit-key-value\n", encoding="ascii")
-        with mock.patch.object(onboarding, "GrokClient") as grok:
-            grok.return_value = FakeClient(proposal(("it", "assign_laptop")))
+        env.write_text("GROQ_API_KEY=unit-key-value\n", encoding="ascii")
+        with mock.patch.object(onboarding, "GroqClient") as groq:
+            groq.return_value = FakeClient(proposal(("it", "assign_laptop")))
             code, out = self.run_flow(Answers("y"), planner="model",
                                       request_text=TEXT, env_path=env, model="m1")
         self.assertEqual(code, EXIT_SUCCESS)
-        grok.assert_called_once_with("unit-key-value", "m1")
+        groq.assert_called_once_with("unit-key-value", "m1")
         self.assertNotIn("unit-key-value", out)
 
 
@@ -163,11 +163,11 @@ class PlannerOptionRules(OnboardingCase):
 
     def test_deterministic_mode_never_reads_the_env_file_or_builds_a_client(self):
         with mock.patch.object(onboarding, "read_key") as read_key, \
-                mock.patch.object(onboarding, "GrokClient") as grok:
+                mock.patch.object(onboarding, "GroqClient") as groq:
             code, out = self.run_flow(Answers("y"))
         self.assertEqual(code, EXIT_SUCCESS)
         read_key.assert_not_called()
-        grok.assert_not_called()
+        groq.assert_not_called()
         self.assertNotIn("planner:", out)
         self.assertEqual(len(self.post.actions_for("hr")), 2)
 

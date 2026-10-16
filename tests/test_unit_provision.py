@@ -26,11 +26,11 @@ class ChildEnvTests(unittest.TestCase):
             self.assertNotIn("OC_APPROVAL_SECRET", env)
 
     def test_model_key_in_the_parent_environment_never_reaches_a_child(self):
-        with mock.patch.dict(os.environ, {"XAI_API_KEY": "parent-only-value"}):
+        with mock.patch.dict(os.environ, {"GROQ_API_KEY": "parent-only-value"}):
             prov = provision.Provisioner(state_dir="s", ports=EPHEMERAL)
             for name, spec, _module in provision.AGENTS:
                 env = prov._child_env(name, spec, 1234)
-                self.assertNotIn("XAI_API_KEY", env)
+                self.assertNotIn("GROQ_API_KEY", env)
                 self.assertNotIn("parent-only-value", env.values())
 
     def test_keys_differ_per_domain(self):

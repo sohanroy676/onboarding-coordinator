@@ -12,7 +12,7 @@ from pathlib import Path
 from app.model_planner import (
     API_URL,
     DEFAULT_MODEL,
-    GrokClient,
+    GroqClient,
     MAX_PROPOSAL_CHARS,
     MAX_REPLY_BYTES,
     ModelPlannerError,
@@ -52,45 +52,45 @@ class ReadKeyTests(unittest.TestCase):
         return read_key(path)
 
     def test_plain_key_is_returned(self):
-        self.assertEqual(self.read("XAI_API_KEY=%s\n" % FAKE_KEY), FAKE_KEY)
+        self.assertEqual(self.read("GROQ_API_KEY=%s\n" % FAKE_KEY), FAKE_KEY)
 
     def test_comments_blanks_and_other_names_are_skipped(self):
-        text = "# note\n\nOTHER=1\n  XAI_API_KEY = %s  \n" % FAKE_KEY
+        text = "# note\n\nOTHER=1\n  GROQ_API_KEY = %s  \n" % FAKE_KEY
         self.assertEqual(self.read(text), FAKE_KEY)
 
     def test_equals_sign_inside_the_value_is_kept(self):
-        self.assertEqual(self.read("XAI_API_KEY=ab=cd\n"), "ab=cd")
+        self.assertEqual(self.read("GROQ_API_KEY=ab=cd\n"), "ab=cd")
 
     def test_missing_file_is_an_error(self):
         with self.assertRaisesRegex(ModelPlannerError, "no .env file"):
             self.read(None)
 
     def test_missing_key_or_empty_value_is_an_error(self):
-        for text in ("OTHER=1\n", "XAI_API_KEY=\n", ""):
+        for text in ("OTHER=1\n", "GROQ_API_KEY=\n", ""):
             with self.subTest(text=text), self.assertRaisesRegex(
-                    ModelPlannerError, "no value for XAI_API_KEY"):
+                    ModelPlannerError, "no value for GROQ_API_KEY"):
                 self.read(text)
 
     def test_line_without_equals_is_an_error_naming_only_the_line(self):
         with self.assertRaisesRegex(ModelPlannerError, "line 2 is not KEY=VALUE"):
-            self.read("XAI_API_KEY=%s\nbroken\n" % FAKE_KEY)
+            self.read("GROQ_API_KEY=%s\nbroken\n" % FAKE_KEY)
 
     def test_non_ascii_and_oversized_files_are_refused(self):
         with self.assertRaisesRegex(ModelPlannerError, "ASCII"):
-            self.read(("XAI_API_KEY=caf" + chr(233) + "\n").encode("utf-8"))
+            self.read(("GROQ_API_KEY=caf" + chr(233) + "\n").encode("utf-8"))
         with self.assertRaisesRegex(ModelPlannerError, "larger than"):
             self.read("# " + "x" * 5000 + "\n")
 
     def test_errors_never_contain_the_key(self):
         try:
-            self.read("XAI_API_KEY=%s\nbroken\n" % FAKE_KEY)
+            self.read("GROQ_API_KEY=%s\nbroken\n" % FAKE_KEY)
         except ModelPlannerError as exc:
             self.assertNotIn(FAKE_KEY, str(exc))
 
 
 class ClientTests(unittest.TestCase):
     def client(self, transport):
-        return GrokClient(FAKE_KEY, transport=transport)
+        return GroqClient(FAKE_KEY, transport=transport)
 
     def test_request_shape(self):
         transport = FakeTransport(raw=reply_body("hello"))
@@ -125,7 +125,7 @@ class ClientTests(unittest.TestCase):
                 self.assertNotIn(FAKE_KEY, str(ctx.exception))
                 self.assertEqual(len(transport.calls), 1)
 
-    def test_error_text_from_xai_is_included_and_made_safe(self):
+    def test_error_text_from_groq_is_included_and_made_safe(self):
         body = json.dumps({"code": "permission-denied",
                            "error": "no credits yet " + FAKE_KEY + " " + chr(233) + " " + "z" * 500})
         with self.assertRaises(ModelPlannerError) as ctx:
@@ -149,7 +149,7 @@ class ClientTests(unittest.TestCase):
                 self.client(FakeTransport(status=400, raw=raw)).propose("s", "u")
             self.assertEqual(str(ctx.exception), "model call failed: HTTP 400" + tail)
 
-    def test_rate_limit_message_also_carries_xai_text(self):
+    def test_rate_limit_message_also_carries_provider_text(self):
         body = json.dumps({"error": "slow down"}).encode("utf-8")
         with self.assertRaisesRegex(ModelPlannerError, r"HTTP 429\): slow down"):
             self.client(FakeTransport(status=429, raw=body)).propose("s", "u")
@@ -163,7 +163,7 @@ class ClientTests(unittest.TestCase):
 
     def test_no_key_is_refused(self):
         with self.assertRaises(ModelPlannerError):
-            GrokClient("")
+            GroqClient("")
 
 
 class PromptTests(unittest.TestCase):

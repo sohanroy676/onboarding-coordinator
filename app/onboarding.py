@@ -14,7 +14,7 @@ import time
 from app.model_planner import (
     DEFAULT_MODEL,
     ENV_PATH,
-    GrokClient,
+    GroqClient,
     ModelPlannerError,
     build_system_prompt,
     parse_proposal,
@@ -119,7 +119,7 @@ def run_onboarding(subject, request_texts=None, *, ask=input, post=post_execute,
         return EXIT_BAD_INPUT
     if planner == "model" and client is None:
         try:
-            client = GrokClient(read_key(env_path), model)
+            client = GroqClient(read_key(env_path), model)
         except ModelPlannerError as exc:
             print("model planner failed: %s" % exc)
             return EXIT_MODEL_FAILED

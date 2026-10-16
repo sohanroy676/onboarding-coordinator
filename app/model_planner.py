@@ -14,15 +14,16 @@ import urllib.request
 from pathlib import Path
 
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
-KEY_NAME = "XAI_API_KEY"
-API_URL = "https://api.x.ai/v1/chat/completions"
-DEFAULT_MODEL = "grok-4.7"
+KEY_NAME = "GROQ_API_KEY"
+API_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_MODEL = "qwen/qwen3.8-27b"
 TIMEOUT_SECONDS = 30
 MAX_REPLY_BYTES = 65536
 MAX_PROPOSAL_CHARS = 4096
 MAX_REQUESTS = 12
 MAX_ENV_BYTES = 4096
 MAX_DETAIL_CHARS = 200
+USER_AGENT = "onboarding-coordinator/3.0"
 DOMAIN_NAMES = ("hr", "it", "facilities")
 
 PROPOSAL_SCHEMA = {
@@ -53,7 +54,7 @@ class ModelPlannerError(Exception):
 
 
 def read_key(path=ENV_PATH):
-    """Return XAI_API_KEY from a .env file of KEY=VALUE lines.
+    """Return GROQ_API_KEY from a .env file of KEY=VALUE lines.
 
     Blank lines and # comments are skipped. Any other line without an = is an
     error. The error text names the problem, never the value.
@@ -99,8 +100,8 @@ def https_post(url, headers, body, timeout):
             exc.close()
 
 
-class GrokClient:
-    """One chat-completions call to xAI. transport is injected in tests."""
+class GroqClient:
+    """One chat-completions call to Groq. transport is injected in tests."""
 
     def __init__(self, key, model=DEFAULT_MODEL, transport=https_post,
                  timeout=TIMEOUT_SECONDS):
@@ -126,6 +127,7 @@ class GrokClient:
             },
         }).encode("utf-8")
         headers = {"Content-Type": "application/json",
+                   "User-Agent": USER_AGENT,
                    "Authorization": "Bearer " + self._key}
         try:
             status, raw = self._transport(API_URL, headers, body, self._timeout)
@@ -148,7 +150,7 @@ class GrokClient:
         return content
 
     def _detail(self, raw):
-        """Return ": <xAI error text>" from an error body, or "" if there is none.
+        """Return ": <Groq error text>" from an error body, or "" if there is none.
 
         The text is cut to 200 printable ASCII characters and the key is
         redacted, so the message is safe to print.
