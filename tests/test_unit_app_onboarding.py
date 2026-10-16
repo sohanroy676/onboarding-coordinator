@@ -136,12 +136,13 @@ class OnboardingCase(unittest.TestCase):
         self.provisioner = FakeProvisioner(state_dir=self.state_dir, ports=ports)
         return self.provisioner
 
-    def run_flow(self, ask, request_texts=None, subject=SUBJECT, post=None, run_id=None):
+    def run_flow(self, ask, request_texts=None, subject=SUBJECT, post=None, run_id=None,
+                 **options):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             code = run_onboarding(
                 subject, request_texts, ask=ask, post=post or self.post,
-                clock=self.clock, state_dir=self.state_dir, run_id=run_id)
+                clock=self.clock, state_dir=self.state_dir, run_id=run_id, **options)
         return code, out.getvalue()
 
     def markers(self):

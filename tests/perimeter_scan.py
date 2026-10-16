@@ -17,6 +17,13 @@ ROOT_SCRIPTS = ("provision.py", "demo.py", "onboard.py")
 TEXT_SUFFIXES = frozenset({".py", ".md", ".txt", ".json", ".yml", ".yaml",
                            ".html", ".css", ".js"})
 SKIP_DIRS = frozenset({"state", ".git", "__pycache__"})
+# The one file that may hold the model API key (ADR-0011), exempt by exact
+# relative path. .env.example and any other .env* file are still scanned.
+ENV_EXEMPT = ".env"
+ENV_FILE_PREFIX = ".env"
+# Only these may name the key or the .env file or import the model planner.
+MODEL_ENV_NAMES = frozenset({".env", "XAI_API_KEY"})
+MODEL_PLANNER_USERS = frozenset({"onboard.py"})
 
 Finding = namedtuple("Finding", "path line rule")
 
@@ -38,6 +45,8 @@ SECRET_RULES = (
      re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
     ("cloud access key",
      re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
+    ("xai api key",
+     re.compile(r"\bxai-[A-Za-z0-9]{20,}")),
     ("token-shaped string",
      re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}")),
 )
@@ -83,9 +92,14 @@ def _relpath(path, root):
 def _text_files(root):
     """Yield project text files under root, skipping runtime and VCS folders."""
     for path in sorted(root.rglob("*")):
-        if not path.is_file() or path.suffix not in TEXT_SUFFIXES:
+        if not path.is_file():
+            continue
+        is_env_file = path.name.startswith(ENV_FILE_PREFIX)
+        if path.suffix not in TEXT_SUFFIXES and not is_env_file:
             continue
         if SKIP_DIRS & set(path.relative_to(root).parts):
+            continue
+        if _relpath(path, root) == ENV_EXEMPT:
             continue
         yield path
 
@@ -234,6 +248,25 @@ def scan_coordinator_env(root=ROOT):
                 findings.append(Finding(rel, node.lineno, "environment read"))
             if isinstance(node, ast.Constant) and node.value == "OC_DOMAIN_KEY":
                 findings.append(Finding(rel, node.lineno, "domain key name"))
+    return findings
+
+
+def scan_model_env_use(root=ROOT):
+    """Return a Finding for any file outside app/ and onboard.py that names the
+    model key or the .env file, or imports the model planner (ADR-0011)."""
+    findings = []
+    for path in _source_files(root):
+        rel = _relpath(path, root)
+        if rel.split("/")[0] == APP_FOLDER or rel in MODEL_PLANNER_USERS:
+            continue
+        for node in ast.walk(_parse(path)):
+            if isinstance(node, ast.Constant) and node.value in MODEL_ENV_NAMES:
+                findings.append(Finding(rel, node.lineno, "model key or .env name"))
+            if isinstance(node, ast.Name) and node.id == "XAI_API_KEY":
+                findings.append(Finding(rel, node.lineno, "model key name"))
+        for module in imported_modules(path):
+            if _is_module_or_inside(module, "app"):
+                findings.append(Finding(rel, 0, "import %s outside app" % module))
     return findings
 
 
