@@ -5,7 +5,20 @@ Format follows Keep a Changelog. Generated from Conventional Commits — regener
 
 ## [Unreleased]
 
-Web UI redesign (planned as 3.2.0, front-end only; the API and the server are unchanged): one lane per domain, the plan hash drawn as a seal, Start all and Stop all, busy states, a plan expiry countdown, a Discard plan button, a message log and a list of runs from the page. Eight page-contract tests added (477 total).
+## [3.2.0] - 2026-10-17
+
+Web UI redesign. Minor release, front-end only: the HTTP API and the server are unchanged.
+
+### Added
+- One lane per domain (HR, IT, Facilities) for the plan and the run, so a refusal shows in the lane of the domain that made it.
+- The plan hash drawn as a seal, Start all and Stop all, busy labels on buttons, a plan expiry countdown, a Discard plan button, a message log and a list of runs started from the page.
+- Eight page-contract tests (no inline style or script, no HTML sinks in `app.js`, every looked-up id exists, each with a planted control). 477 tests in total.
+
+### Changed
+- The planner choice is a radio group (the `planner` id is kept).
+
+### Stated limits
+- Unchanged: ADR-0008 (key derivation), outcome 9, D12. The real flow was checked by hand in a browser; no browser test is a project dependency.
 
 ## [3.1.0] - 2026-10-16
 

@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Now
-- v2.0.1 (patch: the Windows reset fix from the final audit, changelog, review guide) is released (tag v2.0.1 at e263319, pushed, CI green on the tag). v2.0.0 is released (tag v2.0.0 at e1d262d, pushed). Nothing else is planned; see Later / ideas.
+- v3.2.0 (web UI redesign, front-end only) is released. v3.0.0, v3.1.0, v2.0.1 and v2.0.0 are released earlier. Nothing else is planned; see Later / ideas.
 
 ## Done
+- v3.2.0 Web UI redesign (minor, front-end only, no API change): one lane per domain for plan and run, plan hash drawn as a seal, Start all / Stop all, busy labels, plan expiry countdown, Discard plan, message log, runs from this page, planner as a radio group. Eight page-contract tests; suite 477 OK, gates unchanged (`traces/v3-2-tests.txt`).
+- v3.1.0 Web UI planner selector (minor): `POST /api/plans` takes `planner` and `request_text`; the model also sees `will_not` actions. Released (tag v3.1.0).
 - v2.0.1 Final audit patch: refused POSTs answered without a connection reset on Windows (`app/server.py`, `domains/domain_agent.py`), G1 test for the 0.1 s / 0.01 s stale case, `docs/final-audit.md`, `docs/review-guide.md`. Suite 388 plus the review-guide docs tests.
 - v2.0 Local web UI (major): `python -m app.server` on 127.0.0.1, port 8110. Plan, approve (the plan hash the user saw), run, and per-domain rebuild, over the same flow as the CLI. Tests `tests/test_unit_app_server.py`; transcript `traces/v2-0-ui-transcript.txt`; ADR-0010 accepted. Suite 385 OK, gates unchanged. Merged at e1d262d, tag v2.0.0, CI green on main and the tag.
 - v1.2 Onboarding core and CLI: `python onboard.py --subject <id>` runs the one flow in `app/onboarding.py` (validate, plan, console approval per ADR-0009, run, rebuild). Exit codes 0 to 4. Tests `tests/test_unit_app_onboarding.py` and `tests/test_unit_app_live.py`; traces `traces/v1-2-*.txt`. No new gate; the six gates are unchanged. Checklist section v1.2.
