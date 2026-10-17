@@ -1,0 +1,9 @@
+plan for audit.002@example.test
+  hr          create_record      supported      {}
+  hr          enroll_benefits    supported      {}
+  it          create_account     supported      {}
+  it          assign_laptop      supported      {}
+  facilities  issue_badge        supported      {}
+  facilities  assign_desk        supported      {}
+Approve this plan? [y/N] not approved: nothing was approved, minted or sent
+all domains stopped
