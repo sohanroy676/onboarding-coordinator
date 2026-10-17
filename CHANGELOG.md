@@ -5,6 +5,8 @@ Format follows Keep a Changelog. Generated from Conventional Commits — regener
 
 ## [Unreleased]
 
+Web UI redesign (planned as 3.2.0, front-end only; the API and the server are unchanged): one lane per domain, the plan hash drawn as a seal, Start all and Stop all, busy states, a plan expiry countdown, a Discard plan button, a message log and a list of runs from the page. Eight page-contract tests added (477 total).
+
 ## [3.1.0] - 2026-10-16
 
 Web UI planner selector. Minor release; the model planner of 3.0.0 is now also available on the local page (ADR-0011 amendment).

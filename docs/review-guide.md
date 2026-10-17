@@ -15,7 +15,7 @@ new claim: the limits are the ones in `docs/final-audit.md` section 7.
 
 1. **The suite and the syntax check** (1 min).
    `python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app`
-   then `python -m unittest discover -s tests -v`. Point at: 469 tests, OK
+   then `python -m unittest discover -s tests -v`. Point at: 477 tests, OK
    (`traces/v3-1-0-archive-tests.txt`, which also shows compileall exit 0 and gates G1
    to G7 on the v3.1.0 archive).
 2. **Every scenario** (3 min). `python demo.py` (`traces/v3-0-demo.txt`). Point at:

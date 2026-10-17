@@ -371,6 +371,69 @@ class StaticFileTests(UiCase):
         self.assertEqual(text.count(b"{{CSRF_TOKEN}}"), 1)
 
 
+def csp_violations(html):
+    """Return what the page's CSP would block: inline style, style tag, inline script."""
+    found = []
+    if re.search(r"\sstyle\s*=", html):
+        found.append("style attribute")
+    if re.search(r"<style[\s>]", html):
+        found.append("style tag")
+    for tag in re.findall(r"<script\b[^>]*>", html):
+        if "src=" not in tag:
+            found.append("inline script")
+    return found
+
+
+def script_html_sinks(script):
+    return [name for name in ("innerHTML", "outerHTML", "insertAdjacentHTML",
+                              "eval(", "document.write") if name in script]
+
+
+def missing_ids(script, html):
+    wanted = set(re.findall(r'byId\("([^"]+)"\)|getElementById\("([^"]+)"\)', script))
+    names = {a or b for a, b in wanted}
+    return sorted(name for name in names if 'id="%s"' % name not in html)
+
+
+class PageContractTests(unittest.TestCase):
+    """Static checks on the page files; the CSP would silently block these mistakes."""
+
+    def setUp(self):
+        self.html = (STATIC_DIR / "index.html").read_text(encoding="ascii")
+        self.script = (STATIC_DIR / "app.js").read_text(encoding="ascii")
+
+    def test_page_uses_no_inline_style_or_script(self):
+        self.assertEqual(csp_violations(self.html), [])
+
+    def test_csp_check_catches_planted_violations(self):
+        self.assertEqual(csp_violations('<p style="x:y">'), ["style attribute"])
+        self.assertEqual(csp_violations("<style>p{}</style>"), ["style tag"])
+        self.assertEqual(csp_violations("<script>go()</script>"), ["inline script"])
+
+    def test_script_writes_no_html_and_runs_no_code_from_text(self):
+        self.assertEqual(script_html_sinks(self.script), [])
+
+    def test_sink_check_catches_planted_sinks(self):
+        self.assertEqual(script_html_sinks("a.innerHTML = b"), ["innerHTML"])
+        self.assertEqual(script_html_sinks("eval(x)"), ["eval("])
+
+    def test_every_id_the_script_looks_up_is_in_the_page(self):
+        self.assertEqual(missing_ids(self.script, self.html), [])
+
+    def test_id_check_catches_a_renamed_id(self):
+        broken = self.html.replace('id="approve"', 'id="approve2"')
+        self.assertEqual(missing_ids(self.script, broken), ["approve"])
+
+    def test_planner_is_a_radio_group_with_deterministic_checked(self):
+        self.assertIn('<fieldset id="planner">', self.html)
+        self.assertRegex(self.html, r'value="deterministic" checked')
+        self.assertIn('value="model"', self.html)
+
+    def test_page_keeps_the_names_the_guides_cite(self):
+        for text in ("Start all", "Make plan", "Approve and run this plan"):
+            self.assertIn(text, self.html)
+
+
 class DomainControlTests(UiCase):
     def test_start_then_status_then_stop(self):
         status, body = self.http.call("POST", "/api/domains/hr/start", {})

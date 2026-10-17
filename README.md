@@ -86,7 +86,9 @@ another port, add `--port <number>`.
 
 On the page:
 
-1. Under **Domains**, start HR, IT and Facilities. A plan needs all three running.
+1. In the left rail under **Domains**, start HR, IT and Facilities (or use **Start all**,
+   which starts them one at a time in that order and stops at the first error). A plan
+   needs all three running. Each domain keeps its own colour on every step below.
 2. Under **New onboarding**, enter the new hire's subject and the requests, one
    `domain:action` per line. The default requests are the six supported actions.
    Optional (v3.1.0): set **Planner** to `model`, enter free text, and the model proposes
@@ -94,11 +96,12 @@ On the page:
    `.env.example`), sends only the text and the declared action names (including the ones a domain refuses) to Groq, and the
    key never reaches the browser. If the model call fails you get an error and no plan;
    there is no fallback. Use synthetic data only.
-3. **Make plan** shows the steps and any warnings, the planner that produced the plan,
-   and the plan hash.
+3. **Make plan** shows the steps in one lane per domain, with each warning under its step,
+   the planner that produced the plan, and the plan hash with a picture of it (the seal).
 4. **Approve and run this plan** signs that exact hash and runs it. A plan can be approved
    only once and expires after 5 minutes.
-5. The run view shows each action's outcome, and the rebuild of each domain's ledger.
+5. The run view shows each action's outcome in its domain's lane (a refusal stays in the
+   lane of the domain that refused it), the same seal, and the rebuild of each domain's ledger.
    **Look up a run** shows the rebuild of any run by its 16-character id.
 
 Press Ctrl-C in the terminal to stop the UI. It also stops any domains it started.
