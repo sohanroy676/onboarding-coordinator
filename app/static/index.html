@@ -8,28 +8,35 @@
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
-<header>
+<div class="shell">
+<aside class="rail">
 <h1>Onboarding coordinator</h1>
 <p class="note">Local only, on 127.0.0.1. Each domain is its own process. This page never receives a secret or a key.</p>
-</header>
+<h2 class="rail-title">Domains</h2>
+<div id="domains" class="domains"></div>
+<div class="rail-actions">
+<button id="start-all" type="button">Start all</button>
+<button id="stop-all" type="button" class="quiet">Stop all</button>
+</div>
+<div id="messages" class="messages" aria-live="polite">
+<p id="message" role="status"></p>
+<ul id="message-log"></ul>
+</div>
+</aside>
 <main>
-<section>
-<h2>Domains</h2>
-<p class="note">Start all three before making a plan. Each start is checked before the domain is used.</p>
-<div id="domains"></div>
-</section>
-<section>
-<h2>New onboarding</h2>
+<section class="step" aria-labelledby="h-request">
+<h2 id="h-request">New onboarding</h2>
 <form id="plan-form">
 <label>New hire (subject)
 <input id="subject" name="subject" autocomplete="off" required value="new.hire@example.test">
 </label>
-<label>Planner
-<select id="planner" name="planner">
-<option value="deterministic" selected>deterministic (default, no model)</option>
-<option value="model">model (opt-in, Groq; the text leaves this machine)</option>
-</select>
-</label>
+<fieldset id="planner">
+<legend>Planner</legend>
+<label class="choice"><input type="radio" name="planner" value="deterministic" checked>
+<span>Deterministic <span class="note">default, no model</span></span></label>
+<label class="choice"><input type="radio" name="planner" value="model">
+<span>Model <span class="note">opt-in, Groq; the text leaves this machine</span></span></label>
+</fieldset>
 <label id="requests-label">Requests, one domain:action per line
 <textarea id="requests" name="requests" rows="6" spellcheck="false"></textarea>
 </label>
@@ -37,31 +44,52 @@
 <textarea id="request-text" name="request_text" rows="3" maxlength="1000" spellcheck="false"></textarea>
 </label>
 <p class="note" id="model-note" hidden>The model only proposes actions. The same plan checks, your approval and each domain's refusals decide what runs. Use synthetic data only. If the model call fails, no plan is made and nothing is sent.</p>
-<button type="submit">Make plan</button>
+<button id="make-plan" type="submit">Make plan</button>
 </form>
 </section>
-<section id="plan-section" hidden>
-<h2>Plan</h2>
-<div id="plan"></div>
-<p class="note">Approving signs the plan hash shown above. The run refuses any plan that differs from it.</p>
+<section id="plan-section" class="step" aria-labelledby="h-plan" hidden>
+<h2 id="h-plan">Plan</h2>
+<p id="plan-meta" class="note"></p>
+<div id="plan" class="lanes"></div>
+<div id="plan-extra"></div>
+<div class="seal-panel">
+<div id="plan-seal" class="seal" aria-hidden="true"></div>
+<div class="seal-text">
+<p class="note">Plan hash</p>
+<p id="plan-hash" class="hash"></p>
+<p class="note">Approving signs this hash. The run refuses any plan that differs from it.</p>
+<p id="plan-expiry" class="note"></p>
+<div class="row">
 <button id="approve" type="button">Approve and run this plan</button>
+<button id="discard" type="button" class="quiet">Discard plan</button>
+<button id="copy-hash" type="button" class="quiet">Copy hash</button>
+</div>
+</div>
+</div>
 </section>
-<section id="run-section" hidden>
-<h2>Run</h2>
-<div id="run"></div>
+<section id="run-section" class="step" aria-labelledby="h-run" hidden>
+<h2 id="h-run">Run</h2>
+<p id="run-summary"></p>
+<div id="run" class="lanes"></div>
+<div class="row seal-row">
+<div id="run-seal" class="seal small" aria-hidden="true"></div>
+<p class="note">Same plan hash as the one you approved.</p>
+</div>
 </section>
-<section>
-<h2>Look up a run</h2>
-<form id="run-form">
-<label>Run id (16 hex characters)
-<input id="run-id" name="run_id" autocomplete="off" required pattern="[0-9a-f]{16}">
+<section class="step" aria-labelledby="h-evidence">
+<h2 id="h-evidence">Evidence</h2>
+<p class="note">Each domain's own ledger, rebuilt by the auditor. The coordinator writes none of it.</p>
+<div id="rebuild"></div>
+<form id="run-form" class="inline-form">
+<label>Look up a run (16 hex characters)
+<input id="run-id" name="run_id" class="hash" autocomplete="off" required pattern="[0-9a-f]{16}">
 </label>
 <button type="submit">Show run</button>
 </form>
-<div id="rebuild"></div>
+<div id="recent"></div>
 </section>
-<p id="message" role="status"></p>
 </main>
+</div>
 <script src="/static/app.js"></script>
 </body>
 </html>
