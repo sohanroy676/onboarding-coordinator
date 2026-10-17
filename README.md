@@ -159,7 +159,7 @@ python -m ledger.reconstruct <run_id>                        # rebuild one run f
 python -m unittest discover -s tests -v                      # full test suite (about 3 minutes)
 python -m unittest discover -s tests -p "test_g1_*.py" -v    # one gate (g1 to g6)
 python -m compileall -q domains coordinator ledger provision.py demo.py onboard.py app   # syntax check
-python -m tests.ui_transcript                                # run the UI for real; rewrites traces/v2-0-ui-transcript.txt
+python -m tests.ui_transcript                                # run the UI for real; rewrites traces/v3-2-ui-transcript.txt
 ```
 
 Do not run `demo.py`, `provision.py` or `onboard.py` while the web UI is running: they

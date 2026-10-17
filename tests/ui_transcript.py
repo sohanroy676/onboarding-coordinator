@@ -1,4 +1,4 @@
-"""Run the web UI for real and save the HTTP exchange as traces/v2-0-ui-transcript.txt.
+"""Run the web UI for real and save the HTTP exchange as traces/v3-2-ui-transcript.txt.
 
 Run from the project root: python -m tests.ui_transcript
 
@@ -21,7 +21,7 @@ from app.onboarding import DEFAULT_REQUEST_TEXTS, DOMAINS
 from app.server import HOST, UiServer, UiState
 
 ROOT = Path(__file__).resolve().parent.parent
-TRACE = ROOT / "traces" / "v2-0-ui-transcript.txt"
+TRACE = ROOT / "traces" / "v3-2-ui-transcript.txt"
 UI_PORT = 8110
 SUBJECT = "new.hire@example.test"
 REDACTED = "<csrf-token>"
